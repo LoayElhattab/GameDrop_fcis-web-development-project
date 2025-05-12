@@ -204,7 +204,7 @@ const config = {
       "value": "prisma-client-js"
     },
     "output": {
-      "value": "D:\\Programming\\Projects\\Web Project\\fcis-web-development-project\\backend\\src\\generated\\prisma",
+      "value": "C:\\Users\\asus\\Desktop\\Web Project\\GameDrop_fcis-web-development-project\\backend\\src\\generated\\prisma",
       "fromEnvVar": null
     },
     "config": {
@@ -218,7 +218,7 @@ const config = {
       }
     ],
     "previewFeatures": [],
-    "sourceFilePath": "D:\\Programming\\Projects\\Web Project\\fcis-web-development-project\\backend\\prisma\\schema.prisma",
+    "sourceFilePath": "C:\\Users\\asus\\Desktop\\Web Project\\GameDrop_fcis-web-development-project\\backend\\prisma\\schema.prisma",
     "isCustomOutput": true
   },
   "relativeEnvPaths": {
