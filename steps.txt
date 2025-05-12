@@ -1,0 +1,4 @@
+steps
+1. installed dependencies in /backend
+2. created proper folder structure for scalability
+3. created server.js and .env
