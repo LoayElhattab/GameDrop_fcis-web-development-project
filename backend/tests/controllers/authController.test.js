@@ -1,4 +1,3 @@
-// tests/controllers/authController.test.js
 const { registerUser, loginUser } = require('../../src/controllers/authController');
 const prisma = require('../../src/config/db');
 const passwordUtils = require('../../src/utils/passwordUtils');
