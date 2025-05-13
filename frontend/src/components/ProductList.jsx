@@ -1,7 +1,7 @@
 // gamedrop-frontend/src/pages/ProductList.jsx
 import React, { useEffect, useState, useCallback } from 'react';
 import { Box, Typography, Container, Grid, Pagination } from '@mui/material';
-import apiClient from '../services/apiClient'; // Assuming apiClient is configured here
+import apiClient from '../api/apiClient'; // Assuming apiClient is configured here
 import ProductCard from '../components/ProductCard'; // ProductCard component
 import ProductSearch from '../components/ProductSearch'; // ProductSearch component
 import ProductFilter from '../components/ProductFilter'; // ProductFilter component

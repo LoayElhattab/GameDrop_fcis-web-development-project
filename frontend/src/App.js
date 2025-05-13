@@ -8,9 +8,10 @@ import AdminRoute from './components/common/AdminRoute';
 import { ThemeProvider, createTheme, CssBaseline } from '@mui/material';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
+import HomePage from './pages/HomePage';
 
 // --- Placeholder Pages ---
-const HomePage = () => <h1>Home Page</h1>;
+const HomePageWrapper = () => <HomePage />;
 const ProductDetailPage = () => <h1>Product Detail Page</h1>;
 const CartPage = () => <h1>Cart Page</h1>;
 const CheckoutPage = () => <h1>Checkout Page</h1>;
@@ -89,7 +90,7 @@ const App = () => {
           <Routes>
             {/* Public routes */}
             <Route path="/" element={<MainLayout />}>
-              <Route index element={<HomePage />} />
+              <Route index element={<HomePageWrapper />} />
               <Route path="products/:productId" element={<ProductDetailPage />} />
               <Route path="login" element={<LoginPage />} />
               <Route path="register" element={<RegisterPage />} />

@@ -1,7 +1,7 @@
 // gamedrop-frontend/src/pages/HomePage.jsx
 import React, { useEffect, useState } from 'react';
 import { Box, Typography, Button, Container, Grid, Card, CardContent } from '@mui/material';
-import apiClient from '../services/apiClient'; // Assuming apiClient is configured here
+import apiClient from '../api/apiClient'; // Assuming apiClient is configured here
 import ProductCard from '../components/ProductCard'; // Assuming ProductCard is created here
 import { Link } from 'react-router-dom';
 
