@@ -39,12 +39,16 @@ const getCart = async (req, res, next) => {
                 },
             });
         }
-
+        if (!cart.items || cart.items.length === 0) {
+            return res.status(200).json({
+                message: "Cart is empty. No items found.",
+                cart: [],
+            });
+        }
         // Return the cart object
         res.status(200).json(cart);
 
     } catch (error) {
-        console.error("Error fetching cart:", error);
         next(error); // Pass error to the next middleware (error handler)
     }
 };
@@ -139,7 +143,6 @@ const addItemToCart = async (req, res, next) => {
 
 
     } catch (error) {
-        console.error("Error adding item to cart:", error);
         next(error);
     }
 };
@@ -152,7 +155,7 @@ const addItemToCart = async (req, res, next) => {
 const updateCartItemQuantity = async (req, res, next) => {
     try {
         const userId = req.user.id;
-        const { product_id } = req.params;
+        const { productId: product_id  } = req.params;
         const { quantity } = req.body;
 
         // Validate input
@@ -230,11 +233,9 @@ const updateCartItemQuantity = async (req, res, next) => {
         res.status(200).json(updatedCartItem);
 
     } catch (error) {
-        console.error("Error updating cart item quantity:", error);
         next(error);
     }
 };
-
 /**
  * Removes an item from the user's cart.
  * Assumes req.user is populated by auth middleware.
@@ -242,7 +243,7 @@ const updateCartItemQuantity = async (req, res, next) => {
 const removeCartItem = async (req, res, next) => {
     try {
         const userId = req.user.id;
-        const { product_id } = req.params;
+        const { productId: product_id } = req.params;
 
          if (!product_id) {
             const error = new Error('Product ID is required in parameters');
@@ -282,7 +283,6 @@ const removeCartItem = async (req, res, next) => {
         res.status(200).json({ message: 'Item removed from cart' });
 
     } catch (error) {
-        console.error("Error removing cart item:", error);
         next(error);
     }
 };
