@@ -1,6 +1,9 @@
 const express = require('express');
 const cors = require('cors');
 const authRoutes = require('./src/routes/authRoutes');
+const productRoutes = require("./src/routes/productRoutes");
+const reviewRoutes = require("./src/routes/reviewRoutes");
+
 const { port } = require('./src/config');
 const { errorMiddleware } = require('./src/middleware/errorMiddleware');
 const { protect } = require('./src/middleware/authMiddleware');
@@ -11,6 +14,8 @@ app.use(cors());
 app.use(express.json());
 
 app.use('/api/auth', authRoutes);
+app.use('/api/products', productRoutes);
+app.use('/api/reviews', reviewRoutes);
 
 // Protected route example
 app.get('/api/protected', protect, (req, res) => {
