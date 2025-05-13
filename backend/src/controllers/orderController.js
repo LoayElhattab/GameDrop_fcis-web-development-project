@@ -38,9 +38,7 @@ const createOrder = async (req, res, next) => {
 
         // Check if cart exists and has items
         if (!cart || cart.items.length === 0) {
-            const error = new Error('Your cart is empty.');
-            error.statusCode = 400;
-            return next(error);
+            return res.status(200).json({ message: 'Your cart is empty.' });
         }
 
         // 3. Perform final stock check and calculate total amount
@@ -97,10 +95,18 @@ const createOrder = async (req, res, next) => {
 
             // Create OrderItem records and decrease product stock
             for (const item of itemsData) {
-                await tx.orderItem.create({
+             await tx.orderItem.create({
                     data: {
-                        orderId: newOrder.id,
-                        product_id: item.product_id,
+                        order: {
+                            connect: {
+                                id: newOrder.id, 
+                            },
+                        },
+                        product: {
+                            connect: {
+                                id: item.product_id, 
+                            },
+                        },
                         quantity: item.quantity,
                         price_at_purchase: item.price_at_purchase,
                     },
@@ -147,7 +153,7 @@ const createOrder = async (req, res, next) => {
         res.status(201).json(order);
 
     } catch (error) {
-        console.error("Error creating order:", error);
+        // Removed console.error("Error creating order:", error);
         // Check if the error is a Prisma ClientKnownRequestError related to transaction
         // or other specific DB errors if needed for more granular responses.
         // For simplicity, just pass the error to the global error handler.
@@ -182,7 +188,7 @@ const getUserOrders = async (req, res, next) => {
         res.status(200).json(orders);
 
     } catch (error) {
-        console.error("Error fetching user orders:", error);
+        // Removed console.error("Error fetching user orders:", error);
         next(error);
     }
 };
@@ -231,11 +237,10 @@ const getSingleOrder = async (req, res, next) => {
         res.status(200).json(order);
 
     } catch (error) {
-        console.error("Error fetching single order:", error);
+        // Removed console.error("Error fetching single order:", error);
         next(error);
     }
 };
-
 
 /**
  * Gets all orders (Admin view).
@@ -268,7 +273,7 @@ const getAllOrders = async (req, res, next) => {
         res.status(200).json(orders);
 
     } catch (error) {
-        console.error("Error fetching all orders (Admin):", error);
+        // Removed console.error("Error fetching all orders (Admin):", error);
         next(error);
     }
 };
@@ -317,7 +322,7 @@ const getSingleOrderAdmin = async (req, res, next) => {
         res.status(200).json(order);
 
     } catch (error) {
-        console.error("Error fetching single order (Admin):", error);
+        // Removed console.error("Error fetching single order (Admin):", error);
         next(error);
     }
 };
@@ -426,11 +431,10 @@ const updateOrderStatus = async (req, res, next) => {
         res.status(200).json(updatedOrder);
 
     } catch (error) {
-        console.error("Error updating order status (Admin):", error);
+        // Removed console.error("Error updating order status (Admin):", error);
         next(error);
     }
 };
-
 
 // Export the customer-facing and admin functions
 module.exports = {

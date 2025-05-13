@@ -33,7 +33,6 @@ const getAllUsers = async (req, res, next) => {
         res.status(200).json(users);
 
     } catch (error) {
-        console.error("Error fetching all users (Admin):", error);
         next(error);
     }
 };
@@ -73,7 +72,7 @@ const getUserById = async (req, res, next) => {
                     take: 5 // Limit to recent orders
                 },
                  reviews: { // Include a summary of recent reviews
-                     select: { id: true, rating: true, comment: true, created_at: true, productId: true },
+                     select: { id: true, rating: true, comment: true, created_at: true, product_id: true },
                      orderBy: { created_at: 'desc' },
                      take: 5 // Limit to recent reviews
                  }
@@ -89,7 +88,6 @@ const getUserById = async (req, res, next) => {
         res.status(200).json(user);
 
     } catch (error) {
-        console.error("Error fetching single user (Admin):", error);
         next(error);
     }
 };
@@ -155,7 +153,6 @@ const updateUserRole = async (req, res, next) => {
         res.status(200).json(updatedUser);
 
     } catch (error) {
-        console.error("Error updating user role (Admin):", error);
         // Check if the error is a "not found" error from Prisma if needed
         if (error.code === 'P2025') { // Prisma error code for record not found
              const notFoundError = new Error(`User with ID ${userId} not found.`);
@@ -204,7 +201,6 @@ const deleteUser = async (req, res, next) => {
         res.status(200).json({ message: `User with ID ${userId} deleted successfully.`, user: deletedUser });
 
     } catch (error) {
-        console.error("Error deleting user (Admin):", error);
         // Check if the error is a "not found" error from Prisma
          if (error.code === 'P2025') { // Prisma error code for record not found
              const notFoundError = new Error(`User with ID ${userId} not found.`);

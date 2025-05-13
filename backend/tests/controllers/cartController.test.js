@@ -1,539 +1,644 @@
-// backend/src/tests/controllers/cartController.test.js
+    // backend/src/tests/controllers/cartController.test.js
 
-// --- Jest Mocking Setup ---
+    // --- Jest Mocking Setup ---
 
-// Define the mock Prisma client object.
-// Prefixing with 'mock' makes it accessible inside the jest.mock factory.
-// Ensure all Prisma methods used in cartController.js are mocked here.
-const mockPrisma = {
+    const mockPrisma = {
     cart: {
         findUnique: jest.fn(),
         create: jest.fn(),
     },
     cartItem: {
-        findMany: jest.fn(),
-        findUnique: jest.fn(),
         create: jest.fn(),
         update: jest.fn(),
         delete: jest.fn(),
-        deleteMany: jest.fn(), // Added in case createOrder uses this on cart items
+        findMany: jest.fn(), // In case you add logic to fetch multiple items
     },
     product: {
         findUnique: jest.fn(),
-        update: jest.fn(), // Added in case createOrder uses this
     },
-    // Add other models if needed for later tests (Orders, OrderItem, User etc. for other controller tests)
-    $transaction: jest.fn(async (callback) => {
-        // Mock Prisma transactions - call the callback with the mock client
-        // This is a simplified mock; complex transaction logic might need more detailed mocking
-        return await callback(mockPrisma);
-    }),
-};
+    };
 
-// Mock the module that exports the prisma client instance.
-// IMPORTANT: The path here ('src/config/db' or '../src/config/db' or another relative path)
-// MUST correctly resolve to your backend/src/config/db.js file from Jest's perspective.
-// This is the line that caused the previous error and needs to be fixed in your setup.
-jest.mock('../../src/config/db', () => mockPrisma); // <-- This path might need adjustment in your Jest config/setup
+    // Mock the Prisma client module
+    jest.mock('../../src/config/db', () => mockPrisma);
 
-// Note: If you are testing controllers that use authentication middleware (`protect`),
-// you might need to mock the middleware here as well, depending on how you want to test.
-// For these controller unit tests, we assume `req.user` is already populated by the (mocked) middleware.
-
-
-// --- Import Controller Functions ---
-
-// Now import the controller functions you want to test
-// This import path should be correct as it's relative from the test file
-const {
+    // --- Import Controller Functions ---
+    const {
     getCart,
     addItemToCart,
     updateCartItemQuantity,
     removeCartItem,
-} = require('../../src/controllers/cartController'); // Path from tests/controllers/ to src/controllers/
+    } = require('../../src/controllers/cartController');
 
-// --- Mock Express Objects ---
+    // --- Mock Express Objects ---
+    const mockRequest = (body = {}, params = {}, query = {}) => ({
+    body,
+    params,
+    query,
+    user: { id: 'test-user-uuid', role: 'CUSTOMER' }, // Default authenticated user
+    });
 
-// Mock Express request, response, and next objects
-const mockRequest = (body = {}, params = {}, query = {}) => ({
-    body: body,
-    params: params,
-    query: query,
-    user: { id: 'test-user-uuid', role: 'CUSTOMER' }, // Mock req.user as provided by auth middleware
-    // Add other user properties like 'role' if needed for authorization tests later
-});
-
-const mockResponse = () => {
+    const mockResponse = () => {
     const res = {};
     res.status = jest.fn().mockReturnValue(res);
     res.json = jest.fn().mockReturnValue(res);
     return res;
-};
+    };
 
-const mockNext = jest.fn();
+    const mockNext = jest.fn();
 
-// --- Your Test Suites ---
-
-describe('Cart Controller', () => {
-    // Reset mocks before each test to ensure isolation
+    // --- Test Suites ---
+    describe('Cart Controller', () => {
     beforeEach(() => {
-        // Clear all mock calls and reset mock implementations
         jest.clearAllMocks();
-
-        // Optional: Reset mock implementations to their original state if needed
-        // mockPrisma.cart.findUnique.mockReset();
-        // ... reset other mocks as needed
     });
 
     // --- Test Cases for getCart ---
     describe('getCart', () => {
-        test('should return existing cart for a user', async () => {
-            // Arrange: Define the mock data that Prisma should return
-            const mockCart = {
-                id: 'cart-uuid',
-                user_id: 'test-user-uuid',
-                items: [
-                    { id: 'item-uuid-1', cart_id: 'cart-uuid', product_id: 'prod-uuid-1', quantity: 2, product: { id: 'prod-uuid-1', title: 'Game 1', price: 59.99 } },
-                ],
-            };
+        const mockCart = {
+        id: 'cart-id',
+        user_id: 'test-user-uuid',
+        items: [
+            {
+            id: 'item-1',
+            product_id: 'prod-1',
+            quantity: 2,
+            product: { id: 'prod-1', title: 'Game A', price: 59.99 },
+            },
+        ],
+        };
 
-            // Tell the mock Prisma client what to return when findUnique is called
-            mockPrisma.cart.findUnique.mockResolvedValue(mockCart);
+        test('should return existing cart with items', async () => {
+        mockPrisma.cart.findUnique.mockResolvedValue(mockCart);
 
-            // Act: Call the controller function with mock req, res, next
-            const req = mockRequest(); // No body, params, query needed for getCart
-            const res = mockResponse();
-            const next = mockNext;
+        const req = mockRequest();
+        const res = mockResponse();
+        const next = mockNext;
 
-            await getCart(req, res, next);
+        await getCart(req, res, next);
 
-            // Assert: Check if the response status and JSON body are as expected
-            expect(mockPrisma.cart.findUnique).toHaveBeenCalledWith({
-                where: { user_id: 'test-user-uuid' },
-                include: {
-                    items: {
-                        include: {
-                            product: true,
-                        },
-                    },
-                },
-            });
-            expect(res.status).toHaveBeenCalledWith(200);
-            expect(res.json).toHaveBeenCalledWith(mockCart);
-            expect(next).not.toHaveBeenCalled(); // Ensure next was not called (no errors)
+        expect(mockPrisma.cart.findUnique).toHaveBeenCalledWith({
+            where: { user_id: 'test-user-uuid' },
+            include: { items: { include: { product: true } } },
+        });
+        expect(res.status).toHaveBeenCalledWith(200);
+        expect(res.json).toHaveBeenCalledWith(mockCart);
+        expect(next).not.toHaveBeenCalled();
         });
 
-        test('should create a new cart if none exists', async () => {
-             // Arrange: Simulate Prisma returning null for findUnique (cart not found)
-             mockPrisma.cart.findUnique.mockResolvedValue(null);
+        test('should create and return a new empty cart if none exists', async () => {
+        const newCart = { id: 'cart-id', user_id: 'test-user-uuid', items: [] };
+        mockPrisma.cart.findUnique.mockResolvedValue(null);
+        mockPrisma.cart.create.mockResolvedValue(newCart);
 
-             // Arrange: Define the structure of the cart that should be created
-             const newMockCart = {
-                 id: 'new-cart-uuid',
-                 user_id: 'test-user-uuid',
-                 items: [] // Newly created cart starts empty
-             };
+        const req = mockRequest();
+        const res = mockResponse();
+        const next = mockNext;
 
-             // Tell the mock Prisma client what to return when create is called
-             // We mock the return value to match the include structure expected by the controller
-             mockPrisma.cart.create.mockResolvedValue(newMockCart);
+        await getCart(req, res, next);
 
-             // Act: Call the controller function
-             const req = mockRequest();
-             const res = mockResponse();
-             const next = mockNext;
+        expect(mockPrisma.cart.findUnique).toHaveBeenCalledWith({
+            where: { user_id: 'test-user-uuid' },
+            include: { items: { include: { product: true } } },
+        });
+        expect(mockPrisma.cart.create).toHaveBeenCalledWith({
+            data: { user_id: 'test-user-uuid' },
+            include: { items: { include: { product: true } } },
+        });
+        expect(res.status).toHaveBeenCalledWith(200);
+        expect(res.json).toHaveBeenCalledWith({
+            message: 'Cart is empty. No items found.',
+            cart: [],
+        });
+        expect(next).not.toHaveBeenCalled();
+        });
 
-             await getCart(req, res, next);
+        test('should return empty cart message if cart has no items', async () => {
+        const emptyCart = { id: 'cart-id', user_id: 'test-user-uuid', items: [] };
+        mockPrisma.cart.findUnique.mockResolvedValue(emptyCart);
 
-             // Assert: Check if findUnique was called, then create was called, and the response is correct
-             expect(mockPrisma.cart.findUnique).toHaveBeenCalledWith({
-                where: { user_id: 'test-user-uuid' },
-                include: {
-                    items: {
-                        include: {
-                            product: true,
-                        },
-                    },
-                },
-            });
-             expect(mockPrisma.cart.create).toHaveBeenCalledWith({
-                 data: { user_id: 'test-user-uuid' },
-                 include: {
-                     items: {
-                         include: {
-                             product: true,
-                         },
-                     },
-                 },
-             });
-             expect(res.status).toHaveBeenCalledWith(200);
-             expect(res.json).toHaveBeenCalledWith(newMockCart);
-             expect(next).not.toHaveBeenCalled();
-         });
+        const req = mockRequest();
+        const res = mockResponse();
+        const next = mockNext;
 
-         test('should call next with error if a database operation fails', async () => {
-             // Arrange: Simulate a database error
-             const dbError = new Error('Database connection failed');
-             mockPrisma.cart.findUnique.mockRejectedValue(dbError); // findUnique throws an error
+        await getCart(req, res, next);
 
-             // Act: Call the controller function
-             const req = mockRequest();
-             const res = mockResponse();
-             const next = mockNext;
+        expect(mockPrisma.cart.findUnique).toHaveBeenCalledWith({
+            where: { user_id: 'test-user-uuid' },
+            include: { items: { include: { product: true } } },
+        });
+        expect(res.status).toHaveBeenCalledWith(200);
+        expect(res.json).toHaveBeenCalledWith({
+            message: 'Cart is empty. No items found.',
+            cart: [],
+        });
+        expect(next).not.toHaveBeenCalled();
+        });
 
-             await getCart(req, res, next);
+        test('should call next with error if database operation fails', async () => {
+        const dbError = new Error('Database error');
+        mockPrisma.cart.findUnique.mockRejectedValue(dbError);
 
-             // Assert: Check if next was called with the error
-             expect(next).toHaveBeenCalledWith(dbError);
-             expect(res.status).not.toHaveBeenCalled(); // Ensure no response was sent by controller
-             expect(res.json).not.toHaveBeenCalled(); // Ensure no response was sent by controller
-         });
+        const req = mockRequest();
+        const res = mockResponse();
+        const next = mockNext;
+
+        await getCart(req, res, next);
+
+        expect(next).toHaveBeenCalledWith(dbError);
+        expect(res.status).not.toHaveBeenCalled();
+        });
     });
 
     // --- Test Cases for addItemToCart ---
     describe('addItemToCart', () => {
-        test('should add a new item to an existing cart', async () => {
-            const existingCart = { id: 'cart-uuid', user_id: 'test-user-uuid', items: [] };
-            const productToAdd = { id: 'prod-uuid-1', title: 'New Game', price: 49.99, stock_quantity: 10 };
-            const newItemQuantity = 1;
-            const createdCartItem = { id: 'item-uuid-1', cart_id: 'cart-uuid', product_id: 'prod-uuid-1', quantity: newItemQuantity, product: productToAdd };
+        const mockProduct = { id: 'prod-1', title: 'Game A', price: 59.99, stock_quantity: 10 };
+        const mockCart = { id: 'cart-id', user_id: 'test-user-uuid', items: [] };
 
-            // Mock Prisma calls
-            mockPrisma.cart.findUnique.mockResolvedValue({ ...existingCart, items: [] }); // Cart exists, is empty
-            mockPrisma.product.findUnique.mockResolvedValue(productToAdd); // Product exists and in stock
-            mockPrisma.cartItem.create.mockResolvedValue(createdCartItem); // Successfully create item
+        test('should add new item to cart and return it', async () => {
+        const mockCartItem = {
+            id: 'item-1',
+            cart_id: 'cart-id',
+            product_id: 'prod-1',
+            quantity: 2,
+            product: mockProduct,
+        };
+        mockPrisma.cart.findUnique.mockResolvedValue(mockCart);
+        mockPrisma.product.findUnique.mockResolvedValue(mockProduct);
+        mockPrisma.cartItem.create.mockResolvedValue(mockCartItem);
 
-            const req = mockRequest({ product_id: productToAdd.id, quantity: newItemQuantity }); // Pass product_id and quantity in the body
-            const res = mockResponse();
-            const next = mockNext;
+        const req = mockRequest({ product_id: 'prod-1', quantity: 2 });
+        const res = mockResponse();
+        const next = mockNext;
 
-            await addItemToCart(req, res, next);
+        await addItemToCart(req, res, next);
 
-            // Assert Prisma calls
-            expect(mockPrisma.cart.findUnique).toHaveBeenCalledWith({ where: { user_id: 'test-user-uuid' }, include: { items: true } });
-            expect(mockPrisma.product.findUnique).toHaveBeenCalledWith({ where: { id: productToAdd.id } });
-            expect(mockPrisma.cartItem.create).toHaveBeenCalledWith({
-                data: {
-                    cart_id: existingCart.id,
-                    product_id: productToAdd.id,
-                    quantity: newItemQuantity,
-                },
-                include: { product: true }
-            });
-            // Assert Response
-            expect(res.status).toHaveBeenCalledWith(201); // 201 Created for new item
-            expect(res.json).toHaveBeenCalledWith(createdCartItem);
-            expect(next).not.toHaveBeenCalled();
+        expect(mockPrisma.cart.findUnique).toHaveBeenCalledWith({
+            where: { user_id: 'test-user-uuid' },
+            include: { items: true },
+        });
+        expect(mockPrisma.product.findUnique).toHaveBeenCalledWith({
+            where: { id: 'prod-1' },
+        });
+        expect(mockPrisma.cartItem.create).toHaveBeenCalledWith({
+            data: {
+            cart_id: 'cart-id',
+            product_id: 'prod-1',
+            quantity: 2,
+            },
+            include: { product: true },
+        });
+        expect(res.status).toHaveBeenCalledWith(201);
+        expect(res.json).toHaveBeenCalledWith(mockCartItem);
+        expect(next).not.toHaveBeenCalled();
         });
 
-        test('should update quantity if item already exists in cart', async () => {
-            const productToAdd = { id: 'prod-uuid-1', title: 'Existing Game', price: 59.99, stock_quantity: 10 };
-            const existingCartItem = { id: 'item-uuid-1', cart_id: 'cart-uuid', product_id: productToAdd.id, quantity: 2, product: productToAdd };
-            const existingCart = { id: 'cart-uuid', user_id: 'test-user-uuid', items: [existingCartItem] };
-            const quantityToAdd = 3; // Add 3 to existing 2, total 5
-            const updatedCartItem = { ...existingCartItem, quantity: existingCartItem.quantity + quantityToAdd };
+        test('should update quantity of existing item in cart', async () => {
+        const existingCart = {
+            ...mockCart,
+            items: [{ id: 'item-1', product_id: 'prod-1', quantity: 3 }],
+        };
+        const updatedCartItem = {
+            id: 'item-1',
+            cart_id: 'cart-id',
+            product_id: 'prod-1',
+            quantity: 5,
+            product: mockProduct,
+        };
+        mockPrisma.cart.findUnique.mockResolvedValue(existingCart);
+        mockPrisma.product.findUnique.mockResolvedValue(mockProduct);
+        mockPrisma.cartItem.update.mockResolvedValue(updatedCartItem);
 
-            // Mock Prisma calls
-            mockPrisma.cart.findUnique.mockResolvedValue(existingCart); // Cart exists, has item
-            mockPrisma.product.findUnique.mockResolvedValue(productToAdd); // Product exists and in stock
-            mockPrisma.cartItem.update.mockResolvedValue(updatedCartItem); // Successfully update item
+        const req = mockRequest({ product_id: 'prod-1', quantity: 2 });
+        const res = mockResponse();
+        const next = mockNext;
 
-            const req = mockRequest({ product_id: productToAdd.id, quantity: quantityToAdd }); // Pass product_id and quantity in the body
-            const res = mockResponse();
-            const next = mockNext;
+        await addItemToCart(req, res, next);
 
-            await addItemToCart(req, res, next);
-
-             // Assert Prisma calls
-            expect(mockPrisma.cart.findUnique).toHaveBeenCalledWith({ where: { user_id: 'test-user-uuid' }, include: { items: true } });
-            expect(mockPrisma.product.findUnique).toHaveBeenCalledWith({ where: { id: productToAdd.id } });
-            expect(mockPrisma.cartItem.update).toHaveBeenCalledWith({
-                where: { id: existingCartItem.id },
-                data: { quantity: updatedCartItem.quantity },
-                include: { product: true }
-            });
-            // Assert Response
-            expect(res.status).toHaveBeenCalledWith(200); // 200 OK for update
-            expect(res.json).toHaveBeenCalledWith(updatedCartItem);
-            expect(next).not.toHaveBeenCalled();
+        expect(mockPrisma.cart.findUnique).toHaveBeenCalledWith({
+            where: { user_id: 'test-user-uuid' },
+            include: { items: true },
+        });
+        expect(mockPrisma.product.findUnique).toHaveBeenCalledWith({
+            where: { id: 'prod-1' },
+        });
+        expect(mockPrisma.cartItem.update).toHaveBeenCalledWith({
+            where: { id: 'item-1' },
+            data: { quantity: 5 },
+            include: { product: true },
+        });
+        expect(res.status).toHaveBeenCalledWith(200);
+        expect(res.json).toHaveBeenCalledWith(updatedCartItem);
+        expect(next).not.toHaveBeenCalled();
         });
 
-        test('should return 400 if product ID is missing', async () => {
-            const req = mockRequest({ /* session */ }, { quantity: 1 }); // Missing product_id
-            const res = mockResponse();
-            const next = mockNext;
+        test('should create cart if none exists and add item', async () => {
+        const newCart = { id: 'cart-id', user_id: 'test-user-uuid', items: [] };
+        const mockCartItem = {
+            id: 'item-1',
+            cart_id: 'cart-id',
+            product_id: 'prod-1',
+            quantity: 2,
+            product: mockProduct,
+        };
+        mockPrisma.cart.findUnique.mockResolvedValue(null);
+        mockPrisma.cart.create.mockResolvedValue(newCart);
+        mockPrisma.product.findUnique.mockResolvedValue(mockProduct);
+        mockPrisma.cartItem.create.mockResolvedValue(mockCartItem);
 
-            await addItemToCart(req, res, next);
+        const req = mockRequest({ product_id: 'prod-1', quantity: 2 });
+        const res = mockResponse();
+        const next = mockNext;
 
-            expect(res.status).not.toHaveBeenCalled(); // Should be handled by next(error)
-            expect(res.json).not.toHaveBeenCalled();
-            expect(next).toHaveBeenCalled();
-            const error = next.mock.calls[0][0]; // Get the error passed to next
-            expect(error.message).toBe('Product ID is required');
-            expect(error.statusCode).toBe(400);
+        await addItemToCart(req, res, next);
+
+        expect(mockPrisma.cart.findUnique).toHaveBeenCalledWith({
+            where: { user_id: 'test-user-uuid' },
+            include: { items: true },
+        });
+        expect(mockPrisma.cart.create).toHaveBeenCalledWith({
+            data: { user_id: 'test-user-uuid' },
+            include: { items: true },
+        });
+        expect(mockPrisma.cartItem.create).toHaveBeenCalledWith({
+            data: {
+            cart_id: 'cart-id',
+            product_id: 'prod-1',
+            quantity: 2,
+            },
+            include: { product: true },
+        });
+        expect(res.status).toHaveBeenCalledWith(201);
+        expect(res.json).toHaveBeenCalledWith(mockCartItem);
+        expect(next).not.toHaveBeenCalled();
         });
 
-         test('should return 400 if quantity is zero or negative when adding new item', async () => {
-            const req = mockRequest({ product_id: 'prod-uuid-1', quantity: 0 }); // Pass product_id and quantity in the body
-             const res = mockResponse();
-             const next = mockNext;
+        test('should return 400 if product_id is missing', async () => {
+        const req = mockRequest({ quantity: 2 });
+        const res = mockResponse();
+        const next = mockNext;
 
-             await addItemToCart(req, res, next);
+        await addItemToCart(req, res, next);
 
-             expect(next).toHaveBeenCalled();
-             const error = next.mock.calls[0][0];
-             expect(error.message).toBe('Quantity must be positive');
-             expect(error.statusCode).toBe(400);
-         });
+        expect(next).toHaveBeenCalledWith(expect.any(Error));
+        const error = next.mock.calls[0][0];
+        expect(error.message).toBe('Product ID is required');
+        expect(error.statusCode).toBe(400);
+        expect(res.status).not.toHaveBeenCalled();
+        });
 
-         test('should return 404 if product is not found when adding item', async () => {
-             const existingCart = { id: 'cart-uuid', user_id: 'test-user-uuid', items: [] }; // Cart is empty
-             mockPrisma.cart.findUnique.mockResolvedValue({ ...existingCart, items: [] });
-             mockPrisma.product.findUnique.mockResolvedValue(null); // Product not found
+        test('should return 400 if quantity is not positive', async () => {
+        const req = mockRequest({ product_id: 'prod-1', quantity: 0 });
+        const res = mockResponse();
+        const next = mockNext;
 
-             const req = mockRequest({ product_id: 'non-existent-prod', quantity: 1 }); // Pass product_id and quantity in the body
-             const res = mockResponse();
-             const next = mockNext;
+        await addItemToCart(req, res, next);
 
-             await addItemToCart(req, res, next);
+        expect(next).toHaveBeenCalledWith(expect.any(Error));
+        const error = next.mock.calls[0][0];
+        expect(error.message).toBe('Quantity must be positive');
+        expect(error.statusCode).toBe(400);
+        expect(res.status).not.toHaveBeenCalled();
+        });
 
-             expect(mockPrisma.product.findUnique).toHaveBeenCalledWith({ where: { id: 'non-existent-prod' } });
-             expect(next).toHaveBeenCalled();
-             const error = next.mock.calls[0][0];
-             expect(error.message).toBe('Product not found');
-             expect(error.statusCode).toBe(404);
-         });
+        test('should return 404 if product not found', async () => {
+        mockPrisma.cart.findUnique.mockResolvedValue(mockCart);
+        mockPrisma.product.findUnique.mockResolvedValue(null);
 
-         test('should return 400 if insufficient stock when adding new item', async () => {
-             const productToAdd = { id: 'prod-uuid-1', title: 'Limited Stock Game', price: 59.99, stock_quantity: 5 };
-             const existingCart = { id: 'cart-uuid', user_id: 'test-user-uuid', items: [] };
-             const quantityToAdd = 10; // Requesting more than available stock
+        const req = mockRequest({ product_id: 'prod-1', quantity: 2 });
+        const res = mockResponse();
+        const next = mockNext;
 
-             mockPrisma.cart.findUnique.mockResolvedValue({ ...existingCart, items: [] });
-             mockPrisma.product.findUnique.mockResolvedValue(productToAdd);
+        await addItemToCart(req, res, next);
 
-             const req = mockRequest({ product_id: productToAdd.id, quantity: quantityToAdd }); // Pass product_id and quantity in the body
-             const res = mockResponse();
-             const next = mockNext;
+        expect(next).toHaveBeenCalledWith(expect.any(Error));
+        const error = next.mock.calls[0][0];
+        expect(error.message).toBe('Product not found');
+        expect(error.statusCode).toBe(404);
+        expect(res.status).not.toHaveBeenCalled();
+        });
 
-             await addItemToCart(req, res, next);
+        test('should return 400 if insufficient stock for new item', async () => {
+        const lowStockProduct = { ...mockProduct, stock_quantity: 1 };
+        mockPrisma.cart.findUnique.mockResolvedValue(mockCart);
+        mockPrisma.product.findUnique.mockResolvedValue(lowStockProduct);
 
-             expect(mockPrisma.product.findUnique).toHaveBeenCalledWith({ where: { id: productToAdd.id } });
-             expect(next).toHaveBeenCalled();
-             const error = next.mock.calls[0][0];
-             expect(error.message).toContain('Insufficient stock');
-             expect(error.statusCode).toBe(400);
-         });
+        const req = mockRequest({ product_id: 'prod-1', quantity: 2 });
+        const res = mockResponse();
+        const next = mockNext;
 
-         test('should return 400 if updating quantity exceeds stock', async () => {
-            const productToAdd = { id: 'prod-uuid-1', title: 'Limited Stock Game', price: 59.99, stock_quantity: 5 };
-            const existingCartItem = { id: 'item-uuid-1', cart_id: 'cart-uuid', product_id: productToAdd.id, quantity: 3, product: productToAdd };
-            const existingCart = { id: 'cart-uuid', user_id: 'test-user-uuid', items: [existingCartItem] };
-            const quantityToAdd = 3; // Adding 3 to existing 3, total 6, exceeds stock of 5
+        await addItemToCart(req, res, next);
 
-            mockPrisma.cart.findUnique.mockResolvedValue(existingCart);
-            mockPrisma.product.findUnique.mockResolvedValue(productToAdd);
+        expect(next).toHaveBeenCalledWith(expect.any(Error));
+        const error = next.mock.calls[0][0];
+        expect(error.message).toContain('Insufficient stock');
+        expect(error.statusCode).toBe(400);
+        expect(res.status).not.toHaveBeenCalled();
+        });
 
-            const req = mockRequest({ product_id: productToAdd.id, quantity: quantityToAdd }); // Pass product_id and quantity in the body
-            const res = mockResponse();
-            const next = mockNext;
+        test('should return 400 if insufficient stock when updating existing item', async () => {
+        const lowStockProduct = { ...mockProduct, stock_quantity: 4 };
+        const existingCart = {
+            ...mockCart,
+            items: [{ id: 'item-1', product_id: 'prod-1', quantity: 3 }],
+        };
+        mockPrisma.cart.findUnique.mockResolvedValue(existingCart);
+        mockPrisma.product.findUnique.mockResolvedValue(lowStockProduct);
 
-            await addItemToCart(req, res, next);
+        const req = mockRequest({ product_id: 'prod-1', quantity: 2 });
+        const res = mockResponse();
+        const next = mockNext;
 
-            expect(mockPrisma.product.findUnique).toHaveBeenCalledWith({ where: { id: productToAdd.id } });
-            expect(next).toHaveBeenCalled();
-            const error = next.mock.calls[0][0];
-            expect(error.message).toContain(`Adding ${quantityToAdd} exceeds stock`);
-            expect(error.statusCode).toBe(400);
-         });
+        await addItemToCart(req, res, next);
 
-        // Add more tests for edge cases and error scenarios...
+        expect(next).toHaveBeenCalledWith(expect.any(Error));
+        const error = next.mock.calls[0][0];
+        expect(error.message).toContain('exceeds stock');
+        expect(error.statusCode).toBe(400);
+        expect(res.status).not.toHaveBeenCalled();
+        });
+
+        test('should call next with error if database operation fails', async () => {
+        const dbError = new Error('Database error');
+        mockPrisma.cart.findUnique.mockRejectedValue(dbError);
+
+        const req = mockRequest({ product_id: 'prod-1', quantity: 2 });
+        const res = mockResponse();
+        const next = mockNext;
+
+        await addItemToCart(req, res, next);
+
+        expect(next).toHaveBeenCalledWith(dbError);
+        expect(res.status).not.toHaveBeenCalled();
+        });
     });
-
 
     // --- Test Cases for updateCartItemQuantity ---
     describe('updateCartItemQuantity', () => {
-        test('should update quantity of an existing item', async () => {
-            const product = { id: 'prod-uuid-1', title: 'Game', price: 59.99, stock_quantity: 10 };
-            const existingCartItem = { id: 'item-uuid-1', cart_id: 'cart-uuid', product_id: product.id, quantity: 2, product: product };
-            const existingCart = { id: 'cart-uuid', user_id: 'test-user-uuid', items: [existingCartItem] };
-            const newQuantity = 5;
-            const updatedCartItem = { ...existingCartItem, quantity: newQuantity };
+        const mockProduct = { id: 'prod-1', title: 'Game A', price: 59.99, stock_quantity: 10 };
+        const mockCart = {
+        id: 'cart-id',
+        user_id: 'test-user-uuid',
+        items: [{ id: 'item-1', product_id: 'prod-1', quantity: 2 }],
+        };
 
-            // Mock Prisma calls
-            mockPrisma.cart.findUnique.mockResolvedValue(existingCart);
-            mockPrisma.product.findUnique.mockResolvedValue(product); // Product exists and in stock for new quantity
-            mockPrisma.cartItem.update.mockResolvedValue(updatedCartItem);
+        test('should update cart item quantity and return updated item', async () => {
+        const updatedCartItem = {
+            id: 'item-1',
+            cart_id: 'cart-id',
+            product_id: 'prod-1',
+            quantity: 3,
+            product: mockProduct,
+        };
+        mockPrisma.cart.findUnique.mockResolvedValue(mockCart);
+        mockPrisma.product.findUnique.mockResolvedValue(mockProduct);
+        mockPrisma.cartItem.update.mockResolvedValue(updatedCartItem);
 
-            const req = mockRequest({ quantity: newQuantity }, { product_id: product.id });
-            const res = mockResponse();
-            const next = mockNext;
+        const req = mockRequest({ quantity: 3 }, { productId: 'prod-1' });
+        const res = mockResponse();
+        const next = mockNext;
 
-            await updateCartItemQuantity(req, res, next);
+        await updateCartItemQuantity(req, res, next);
 
-             // Assert Prisma calls
-            expect(mockPrisma.cart.findUnique).toHaveBeenCalledWith({ where: { user_id: 'test-user-uuid' }, include: { items: true } });
-            expect(mockPrisma.cartItem.update).toHaveBeenCalledWith({
-                where: { id: existingCartItem.id },
-                data: { quantity: newQuantity },
-                include: { product: true }
-            });
-             // Assert Response
-            expect(res.status).toHaveBeenCalledWith(200);
-            expect(res.json).toHaveBeenCalledWith(updatedCartItem);
-            expect(next).not.toHaveBeenCalled();
+        expect(mockPrisma.cart.findUnique).toHaveBeenCalledWith({
+            where: { user_id: 'test-user-uuid' },
+            include: { items: true },
+        });
+        expect(mockPrisma.product.findUnique).toHaveBeenCalledWith({
+            where: { id: 'prod-1' },
+        });
+        expect(mockPrisma.cartItem.update).toHaveBeenCalledWith({
+            where: { id: 'item-1' },
+            data: { quantity: 3 },
+            include: { product: true },
+        });
+        expect(res.status).toHaveBeenCalledWith(200);
+        expect(res.json).toHaveBeenCalledWith(updatedCartItem);
+        expect(next).not.toHaveBeenCalled();
         });
 
-        test('should remove item if new quantity is 0', async () => {
-            const product = { id: 'prod-uuid-1', title: 'Game', price: 59.99, stock_quantity: 10 };
-            const existingCartItem = { id: 'item-uuid-1', cart_id: 'cart-uuid', product_id: product.id, quantity: 2, product: product };
-            const existingCart = { id: 'cart-uuid', user_id: 'test-user-uuid', items: [existingCartItem] };
-            const newQuantity = 0;
+        test('should remove item if quantity is 0', async () => {
+        mockPrisma.cart.findUnique.mockResolvedValue(mockCart);
+        mockPrisma.product.findUnique.mockResolvedValue(mockProduct);
+        mockPrisma.cartItem.delete.mockResolvedValue({});
 
-            // Mock Prisma calls
-            mockPrisma.cart.findUnique.mockResolvedValue(existingCart);
-            mockPrisma.cartItem.delete.mockResolvedValue(null); // Delete does not return the deleted item by default
+        const req = mockRequest({ quantity: 0 }, { productId: 'prod-1' });
+        const res = mockResponse();
+        const next = mockNext;
 
-            const req = mockRequest({ quantity: newQuantity }, { product_id: product.id });
-            const res = mockResponse();
-            const next = mockNext;
+        await updateCartItemQuantity(req, res, next);
 
-            await updateCartItemQuantity(req, res, next);
-
-             // Assert Prisma calls
-            expect(mockPrisma.cart.findUnique).toHaveBeenCalledWith({ where: { user_id: 'test-user-uuid' }, include: { items: true } });
-            expect(mockPrisma.cartItem.delete).toHaveBeenCalledWith({
-                where: { id: existingCartItem.id },
-            });
-             // Assert Response
-            expect(res.status).toHaveBeenCalledWith(200);
-            expect(res.json).toHaveBeenCalledWith({ message: 'Item removed from cart' });
-            expect(next).not.toHaveBeenCalled();
+        expect(mockPrisma.cart.findUnique).toHaveBeenCalledWith({
+            where: { user_id: 'test-user-uuid' },
+            include: { items: true },
+        });
+        expect(mockPrisma.cartItem.delete).toHaveBeenCalledWith({
+            where: { id: 'item-1' },
+        });
+        expect(res.status).toHaveBeenCalledWith(200);
+        expect(res.json).toHaveBeenCalledWith({ message: 'Item removed from cart' });
+        expect(next).not.toHaveBeenCalled();
         });
 
-        test('should return 400 if quantity is missing or invalid', async () => {
-            const req1 = mockRequest({}, { product_id: 'prod-uuid-1' }); // Missing quantity
-            const req2 = mockRequest({ quantity: -5 }, { product_id: 'prod-uuid-1' }); // Negative quantity (handled as remove, but validation is for format)
+        test('should return 400 if productId is missing', async () => {
+        const req = mockRequest({ quantity: 3 }, {});
+        const res = mockResponse();
+        const next = mockNext;
 
-            const res = mockResponse();
-            const next = mockNext;
+        await updateCartItemQuantity(req, res, next);
 
-            await updateCartItemQuantity(req1, res, next);
-            expect(next).toHaveBeenCalledTimes(1);
-            let error = next.mock.calls[0][0];
-            expect(error.message).toBe('Valid quantity (0 or greater) is required');
-            expect(error.statusCode).toBe(400);
+        expect(next).toHaveBeenCalledWith(expect.any(Error));
+        const error = next.mock.calls[0][0];
+        expect(error.message).toBe('Product ID is required in parameters');
+        expect(error.statusCode).toBe(400);
+        expect(res.status).not.toHaveBeenCalled();
+        });
 
-            jest.clearAllMocks(); // Clear next calls for the second test
-            await updateCartItemQuantity(req2, res, next);
-            expect(next).toHaveBeenCalledTimes(1);
-            error = next.mock.calls[0][0];
-            expect(error.message).toBe('Valid quantity (0 or greater) is required'); // Validation should catch this before quantity <= 0 logic
-            expect(error.statusCode).toBe(400);
+        test('should return 400 if quantity is invalid', async () => {
+        const req = mockRequest({ quantity: -1 }, { productId: 'prod-1' });
+        const res = mockResponse();
+        const next = mockNext;
+
+        await updateCartItemQuantity(req, res, next);
+
+        expect(next).toHaveBeenCalledWith(expect.any(Error));
+        const error = next.mock.calls[0][0];
+        expect(error.message).toBe('Valid quantity (0 or greater) is required');
+        expect(error.statusCode).toBe(400);
+        expect(res.status).not.toHaveBeenCalled();
+        });
+
+        test('should return 404 if cart not found', async () => {
+        mockPrisma.cart.findUnique.mockResolvedValue(null);
+
+        const req = mockRequest({ quantity: 3 }, { productId: 'prod-1' });
+        const res = mockResponse();
+        const next = mockNext;
+
+        await updateCartItemQuantity(req, res, next);
+
+        expect(next).toHaveBeenCalledWith(expect.any(Error));
+        const error = next.mock.calls[0][0];
+        expect(error.message).toBe('User cart not found');
+        expect(error.statusCode).toBe(404);
+        expect(res.status).not.toHaveBeenCalled();
         });
 
         test('should return 404 if item not found in cart', async () => {
-             const existingCart = { id: 'cart-uuid', user_id: 'test-user-uuid', items: [] }; // Cart is empty
-             mockPrisma.cart.findUnique.mockResolvedValue(existingCart);
+        const emptyCart = { ...mockCart, items: [] };
+        mockPrisma.cart.findUnique.mockResolvedValue(emptyCart);
 
-             const req = mockRequest({ quantity: 1 }, { product_id: 'non-existent-item-in-cart' });
-             const res = mockResponse();
-             const next = mockNext;
+        const req = mockRequest({ quantity: 3 }, { productId: 'prod-1' });
+        const res = mockResponse();
+        const next = mockNext;
 
-             await updateCartItemQuantity(req, res, next);
+        await updateCartItemQuantity(req, res, next);
 
-             expect(mockPrisma.cart.findUnique).toHaveBeenCalledWith({ where: { user_id: 'test-user-uuid' }, include: { items: true } });
-             expect(next).toHaveBeenCalled();
-             const error = next.mock.calls[0][0];
-             expect(error.message).toBe('Item not found in cart');
-             expect(error.statusCode).toBe(404);
+        expect(next).toHaveBeenCalledWith(expect.any(Error));
+        const error = next.mock.calls[0][0];
+        expect(error.message).toBe('Item not found in cart');
+        expect(error.statusCode).toBe(404);
+        expect(res.status).not.toHaveBeenCalled();
         });
 
-        test('should return 400 if insufficient stock when updating quantity', async () => {
-            const product = { id: 'prod-uuid-1', title: 'Limited Stock Game', price: 59.99, stock_quantity: 5 };
-            const existingCartItem = { id: 'item-uuid-1', cart_id: 'cart-uuid', product_id: product.id, quantity: 2, product: product };
-            const existingCart = { id: 'cart-uuid', user_id: 'test-user-uuid', items: [existingCartItem] };
-            const newQuantity = 7;
+        test('should return 404 if product not found', async () => {
+        mockPrisma.cart.findUnique.mockResolvedValue(mockCart);
+        mockPrisma.product.findUnique.mockResolvedValue(null);
 
-            // Mock Prisma calls
-            mockPrisma.cart.findUnique.mockResolvedValue(existingCart);
-            mockPrisma.product.findUnique.mockResolvedValue(product);
+        const req = mockRequest({ quantity: 3 }, { productId: 'prod-1' });
+        const res = mockResponse();
+        const next = mockNext;
 
-            const req = mockRequest({ quantity: newQuantity }, { product_id: product.id });
-            const res = mockResponse();
-            const next = mockNext;
+        await updateCartItemQuantity(req, res, next);
 
-            await updateCartItemQuantity(req, res, next);
-
-            expect(mockPrisma.cart.findUnique).toHaveBeenCalledWith({ where: { user_id: 'test-user-uuid' }, include: { items: true } });
-            expect(mockPrisma.product.findUnique).toHaveBeenCalledWith({ where: { id: product.id } });
-            expect(next).toHaveBeenCalled();
-            const error = next.mock.calls[0][0];
-            expect(error.message).toContain(`Cannot update quantity to ${newQuantity}`);
-            expect(error.statusCode).toBe(400);
+        expect(next).toHaveBeenCalledWith(expect.any(Error));
+        const error = next.mock.calls[0][0];
+        expect(error.message).toBe('Associated product not found');
+        expect(error.statusCode).toBe(404);
+        expect(res.status).not.toHaveBeenCalled();
         });
 
-        // Add more tests for edge cases and error scenarios...
+        test('should return 400 if insufficient stock', async () => {
+        const lowStockProduct = { ...mockProduct, stock_quantity: 2 };
+        mockPrisma.cart.findUnique.mockResolvedValue(mockCart);
+        mockPrisma.product.findUnique.mockResolvedValue(lowStockProduct);
+
+        const req = mockRequest({ quantity: 3 }, { productId: 'prod-1' });
+        const res = mockResponse();
+        const next = mockNext;
+
+        await updateCartItemQuantity(req, res, next);
+
+        expect(next).toHaveBeenCalledWith(expect.any(Error));
+        const error = next.mock.calls[0][0];
+        expect(error.message).toContain('Cannot update quantity');
+        expect(error.statusCode).toBe(400);
+        expect(res.status).not.toHaveBeenCalled();
+        });
+
+        test('should call next with error if database operation fails', async () => {
+        const dbError = new Error('Database error');
+        mockPrisma.cart.findUnique.mockRejectedValue(dbError);
+
+        const req = mockRequest({ quantity: 3 }, { productId: 'prod-1' });
+        const res = mockResponse();
+        const next = mockNext;
+
+        await updateCartItemQuantity(req, res, next);
+
+        expect(next).toHaveBeenCalledWith(dbError);
+        expect(res.status).not.toHaveBeenCalled();
+        });
     });
 
     // --- Test Cases for removeCartItem ---
     describe('removeCartItem', () => {
-         test('should remove an item from the cart', async () => {
-             const product = { id: 'prod-uuid-1', title: 'Game to Remove', price: 39.99 };
-             const itemToRemove = { id: 'item-uuid-1', cart_id: 'cart-uuid', product_id: product.id, quantity: 1, product: product };
-             const existingCart = { id: 'cart-uuid', user_id: 'test-user-uuid', items: [itemToRemove] };
+        const mockCart = {
+        id: 'cart-id',
+        user_id: 'test-user-uuid',
+        items: [{ id: 'item-1', product_id: 'prod-1', quantity: 2 }],
+        };
 
-             // Mock Prisma calls
-             mockPrisma.cart.findUnique.mockResolvedValue(existingCart);
-             mockPrisma.cartItem.delete.mockResolvedValue(itemToRemove); // Mock delete returning the removed item (Prisma might return null/undefined)
+        test('should remove item from cart and return success message', async () => {
+        mockPrisma.cart.findUnique.mockResolvedValue(mockCart);
+        mockPrisma.cartItem.delete.mockResolvedValue({});
 
-             const req = mockRequest({}, { product_id: product.id });
-             const res = mockResponse();
-             const next = mockNext;
+        const req = mockRequest({}, { productId: 'prod-1' });
+        const res = mockResponse();
+        const next = mockNext;
 
-             await removeCartItem(req, res, next);
+        await removeCartItem(req, res, next);
 
-             // Assert Prisma calls
-             expect(mockPrisma.cart.findUnique).toHaveBeenCalledWith({ where: { user_id: 'test-user-uuid' }, include: { items: true } });
-             expect(mockPrisma.cartItem.delete).toHaveBeenCalledWith({
-                 where: { id: itemToRemove.id },
-             });
-             // Assert Response
-             expect(res.status).toHaveBeenCalledWith(200);
-             expect(res.json).toHaveBeenCalledWith({ message: 'Item removed from cart' });
-             expect(next).not.toHaveBeenCalled();
-         });
-
-         test('should return 404 if item not found in cart', async () => {
-             const existingCart = { id: 'cart-uuid', user_id: 'test-user-uuid', items: [] }; // Cart is empty
-             mockPrisma.cart.findUnique.mockResolvedValue(existingCart);
-
-             const req = mockRequest({}, { product_id: 'non-existent-item-in-cart' });
-             const res = mockResponse();
-             const next = mockNext;
-
-             await removeCartItem(req, res, next);
-
-             expect(mockPrisma.cart.findUnique).toHaveBeenCalledWith({ where: { user_id: 'test-user-uuid' }, include: { items: true } });
-             expect(next).toHaveBeenCalled();
-             const error = next.mock.calls[0][0];
-             expect(error.message).toBe('Item not found in cart');
-             expect(error.statusCode).toBe(404);
-         });
-
-        test('should return 400 if product ID is missing in parameters', async () => {
-            const req = mockRequest({}, {}); // Missing product_id in params
-            const res = mockResponse();
-            const next = mockNext;
-
-            await removeCartItem(req, res, next);
-
-            expect(next).toHaveBeenCalled();
-            const error = next.mock.calls[0][0];
-            expect(error.message).toBe('Product ID is required in parameters');
-            expect(error.statusCode).toBe(400);
+        expect(mockPrisma.cart.findUnique).toHaveBeenCalledWith({
+            where: { user_id: 'test-user-uuid' },
+            include: { items: true },
+        });
+        expect(mockPrisma.cartItem.delete).toHaveBeenCalledWith({
+            where: { id: 'item-1' },
+        });
+        expect(res.status).toHaveBeenCalledWith(200);
+        expect(res.json).toHaveBeenCalledWith({ message: 'Item removed from cart' });
+        expect(next).not.toHaveBeenCalled();
         });
 
-        // Add more tests for error scenarios...
+        test('should return 400 if productId is missing', async () => {
+        const req = mockRequest({}, {});
+        const res = mockResponse();
+        const next = mockNext;
+
+        await removeCartItem(req, res, next);
+
+        expect(next).toHaveBeenCalledWith(expect.any(Error));
+        const error = next.mock.calls[0][0];
+        expect(error.message).toBe('Product ID is required in parameters');
+        expect(error.statusCode).toBe(400);
+        expect(res.status).not.toHaveBeenCalled();
+        });
+
+        test('should return 404 if cart not found', async () => {
+        mockPrisma.cart.findUnique.mockResolvedValue(null);
+
+        const req = mockRequest({}, { productId: 'prod-1' });
+        const res = mockResponse();
+        const next = mockNext;
+
+        await removeCartItem(req, res, next);
+
+        expect(next).toHaveBeenCalledWith(expect.any(Error));
+        const error = next.mock.calls[0][0];
+        expect(error.message).toBe('User cart not found');
+        expect(error.statusCode).toBe(404);
+        expect(res.status).not.toHaveBeenCalled();
+        });
+
+        test('should return 404 if item not found in cart', async () => {
+        const emptyCart = { ...mockCart, items: [] };
+        mockPrisma.cart.findUnique.mockResolvedValue(emptyCart);
+
+        const req = mockRequest({}, { productId: 'prod-1' });
+        const res = mockResponse();
+        const next = mockNext;
+
+        await removeCartItem(req, res, next);
+
+        expect(next).toHaveBeenCalledWith(expect.any(Error));
+        const error = next.mock.calls[0][0];
+        expect(error.message).toBe('Item not found in cart');
+        expect(error.statusCode).toBe(404);
+        expect(res.status).not.toHaveBeenCalled();
+        });
+
+        test('should call next with error if database operation fails', async () => {
+        const dbError = new Error('Database error');
+        mockPrisma.cart.findUnique.mockRejectedValue(dbError);
+
+        const req = mockRequest({}, { productId: 'prod-1' });
+        const res = mockResponse();
+        const next = mockNext;
+
+        await removeCartItem(req, res, next);
+
+        expect(next).toHaveBeenCalledWith(dbError);
+        expect(res.status).not.toHaveBeenCalled();
+        });
     });
-});
+    });
