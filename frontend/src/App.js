@@ -8,12 +8,15 @@ import AdminRoute from './components/common/AdminRoute';
 import { ThemeProvider, createTheme, CssBaseline } from '@mui/material';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
+import CartPage from "./pages/CartPage" ;
+import CheckoutPage from "./pages/CheckoutPage" ;
+
 
 // --- Placeholder Pages ---
 const HomePage = () => <h1>Home Page</h1>;
 const ProductDetailPage = () => <h1>Product Detail Page</h1>;
-const CartPage = () => <h1>Cart Page</h1>;
-const CheckoutPage = () => <h1>Checkout Page</h1>;
+//const CartPage = () => <h1>Cart Page</h1>;
+//const CheckoutPage = () => <h1>Checkout Page</h1>;
 const OrderHistoryPage = () => <h1>Order History Page</h1>;
 const OrderDetailPage = () => <h1>Order Detail Page</h1>;
 const ProfilePage = () => <h1>Profile Page</h1>;
