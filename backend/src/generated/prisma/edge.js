@@ -203,7 +203,7 @@ const config = {
       "value": "prisma-client-js"
     },
     "output": {
-      "value": "D:\\fcis\\projects\\web_project\\GameDrop_fcis-web-development-project\\backend\\src\\generated\\prisma",
+      "value": "E:\\college materials\\current term\\Web\\project\\GameDrop_fcis-web-development-project\\backend\\src\\generated\\prisma",
       "fromEnvVar": null
     },
     "config": {
@@ -217,7 +217,7 @@ const config = {
       }
     ],
     "previewFeatures": [],
-    "sourceFilePath": "D:\\fcis\\projects\\web_project\\GameDrop_fcis-web-development-project\\backend\\prisma\\schema.prisma",
+    "sourceFilePath": "E:\\college materials\\current term\\Web\\project\\GameDrop_fcis-web-development-project\\backend\\prisma\\schema.prisma",
     "isCustomOutput": true
   },
   "relativeEnvPaths": {
