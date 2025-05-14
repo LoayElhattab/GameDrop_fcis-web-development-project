@@ -9,10 +9,12 @@ import { ThemeProvider, createTheme, CssBaseline } from '@mui/material';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import HomePage from './pages/HomePage';
+import ProductDetailPage from './pages/ProductDetailPage';
+import ScrollToTop from './components/ScrollToTop';
 
 // --- Placeholder Pages ---
 const HomePageWrapper = () => <HomePage />;
-const ProductDetailPage = () => <h1>Product Detail Page</h1>;
+const ProductDetailPageWrapper = () => <ProductDetailPage />;
 const CartPage = () => <h1>Cart Page</h1>;
 const CheckoutPage = () => <h1>Checkout Page</h1>;
 const OrderHistoryPage = () => <h1>Order History Page</h1>;
@@ -86,6 +88,7 @@ const App = () => {
     <ThemeProvider theme={darkTheme}>
       <CssBaseline />
       <Router>
+        <ScrollToTop />
         <AuthProvider>
           <Routes>
             {/* Public routes */}

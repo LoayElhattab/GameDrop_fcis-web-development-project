@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Box, Typography, Container, Grid, CardMedia, Button, Tabs, Tab, Paper, Divider } from '@mui/material';
 import AddShoppingCartIcon from '@mui/icons-material/AddShoppingCart';
-import apiClient from '../services/apiClient'; // Assuming apiClient is configured
+import apiClient from '../api/apiClient'; // Assuming apiClient is configured
 import ProductCard from '../components/ProductCard'; // Reusing ProductCard
 // Placeholder components for reviews (implemented in TM6)
 const ReviewList = ({ productId }) => <Box sx={{ mt: 2 }}><Typography>Reviews for Product {productId} (Coming Soon)</Typography></Box>;
@@ -45,12 +45,12 @@ function ProductDetailPage() {
 
                 // Fetch related products (example: by genre or platform, exclude current product)
                 // You might need a backend endpoint or logic to fetch related items based on product details
-                const relatedResponse = await apiClient.get('/products', {
-                    params: {
-                        genre: productResponse.data.genre, // Example: Fetch by same genre
-                        limit: 4, // Get 4 related products
-                        exclude: productId // Exclude the current product
-                    }
+                const relatedResponse = await apiClient.get('/products/getProducts', {
+                    // params: {
+                    //     genre: productResponse.data.genre, // Example: Fetch by same genre
+                    //     limit: 4, // Get 4 related products
+                    //     exclude: productId // Exclude the current product
+                    // }
                 });
                 setRelatedProducts(relatedResponse.data.products || []); // Assuming similar response structure to ProductList
 
@@ -143,7 +143,7 @@ function ProductDetailPage() {
                                 {product.title}
                             </Typography>
                             <Typography variant="h5" gutterBottom sx={{ color: '#e0e0e0' }}>
-                                ${product.price.toFixed(2)} {/* Format price */}
+                                ${parseFloat(product.price).toFixed(2)} {/* Format price */}
                             </Typography>
                             <Typography variant="body1" gutterBottom sx={{ color: '#bdbdbd' }}>
                                 Platform: {product.platform}

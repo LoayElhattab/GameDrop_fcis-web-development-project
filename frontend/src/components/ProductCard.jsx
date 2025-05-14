@@ -70,7 +70,7 @@ function ProductCard({ product }) {
                     {product.platform} | {product.genre}
                 </Typography>
                 <Typography variant="h5" sx={{ color: '#e0e0e0', fontWeight: 'bold' }}>
-                    ${product.price.toFixed(2)} {/* Format price to 2 decimal places */}
+                    ${parseFloat(product.price).toFixed(2)} | {product.price} {/* Format price to 2 decimal places */}
                 </Typography>
                 {/* Optional: Display stock status */}
                 {isOutOfStock && (

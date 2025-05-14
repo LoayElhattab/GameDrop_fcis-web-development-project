@@ -32,7 +32,8 @@ function ProductList() {
         setError(null);
         try {
             // Fetch products from the backend API using current search, filter, and pagination params
-            const response = await apiClient.get('/products', {
+            const response = await apiClient.get('/products/getProducts', {
+                withCredentials: true,
                 params: {
                     search: searchTerm || undefined, // Only include if not empty
                     platform: platformFilter || undefined, // Only include if not empty
