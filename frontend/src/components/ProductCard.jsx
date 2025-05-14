@@ -26,6 +26,7 @@ function ProductCard({ product }) {
 
     // Placeholder for addToCart function before CartContext is implemented
     const handleAddToCart = () => {
+        
         console.log(`Adding product ${product.id} to cart`);
         // addToCart(product.id, 1); // Call actual add to cart function
     };

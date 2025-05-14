@@ -81,7 +81,7 @@ Prisma.NullTypes = {
 
 
 
-const path = require('path')
+  const path = require('path')
 
 /**
  * Enums
@@ -204,7 +204,7 @@ const config = {
       "value": "prisma-client-js"
     },
     "output": {
-      "value": "C:\\Users\\OPT\\Desktop\\Web project\\GameDrop_fcis-web-development-project\\backend\\src\\generated\\prisma",
+      "value": "E:\\college materials\\current term\\Web\\project\\GameDrop_fcis-web-development-project\\backend\\src\\generated\\prisma",
       "fromEnvVar": null
     },
     "config": {
@@ -218,8 +218,7 @@ const config = {
       }
     ],
     "previewFeatures": [],
-    "sourceFilePath": "D:\\fcis\\projects\\web_project\\GameDrop_fcis-web-development-project\\backend\\prisma\\schema.prisma",
-    "sourceFilePath": "C:\\Users\\OPT\\Desktop\\Web project\\GameDrop_fcis-web-development-project\\backend\\prisma\\schema.prisma",
+    "sourceFilePath": "E:\\college materials\\current term\\Web\\project\\GameDrop_fcis-web-development-project\\backend\\prisma\\schema.prisma",
     "isCustomOutput": true
   },
   "relativeEnvPaths": {
@@ -254,7 +253,7 @@ if (!fs.existsSync(path.join(__dirname, 'schema.prisma'))) {
     "src/generated/prisma",
     "generated/prisma",
   ]
-
+  
   const alternativePath = alternativePaths.find((altPath) => {
     return fs.existsSync(path.join(process.cwd(), altPath, 'schema.prisma'))
   }) ?? alternativePaths[0]
@@ -272,8 +271,8 @@ config.compilerWasm = undefined
 const { warnEnvConflicts } = require('./runtime/library.js')
 
 warnEnvConflicts({
-  rootEnvPath: config.relativeEnvPaths.rootEnvPath && path.resolve(config.dirname, config.relativeEnvPaths.rootEnvPath),
-  schemaEnvPath: config.relativeEnvPaths.schemaEnvPath && path.resolve(config.dirname, config.relativeEnvPaths.schemaEnvPath)
+    rootEnvPath: config.relativeEnvPaths.rootEnvPath && path.resolve(config.dirname, config.relativeEnvPaths.rootEnvPath),
+    schemaEnvPath: config.relativeEnvPaths.schemaEnvPath && path.resolve(config.dirname, config.relativeEnvPaths.schemaEnvPath)
 })
 
 const PrismaClient = getPrismaClient(config)
