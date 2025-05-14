@@ -163,7 +163,7 @@ describe("Review Controller", () => {
       );
     });
 
-    it("should return empty array if no reviews exist", async () => {
+   it("should return empty array if no reviews exist", async () => {
       prisma.review.findMany.mockResolvedValue([]);
 
       req.params = { productId: "1" };
@@ -174,7 +174,9 @@ describe("Review Controller", () => {
         where: { product_id: "1" },
       });
       expect(res.status).toHaveBeenCalledWith(200);
-      expect(res.json).toHaveBeenCalledWith([]);
+      expect(res.json).toHaveBeenCalledWith({
+        message: "No reviews for this product yet",
+      });
     });
 
     it("should handle database errors", async () => {

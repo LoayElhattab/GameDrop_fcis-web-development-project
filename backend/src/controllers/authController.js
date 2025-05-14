@@ -41,3 +41,44 @@ exports.loginUser = async (req, res, next) => {
     next(error);
   }
 };
+exports.getHashedPassword = async (req, res, next) => {
+    try {
+      const { email } = req.query; // Or use req.body.email or req.params.email
+      const user = await prisma.user.findUnique({
+        where: { email },
+        select: { email: true, password_hash: true }, // Only select needed fields
+      });
+  
+      if (!user) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+  
+      res.json({ email: user.email, hashedPassword: user.password_hash });
+    } catch (error) {
+      next(error);
+    }
+  };
+  exports.getUserProfile = async (req, res, next) => {
+    try {
+      const user = await prisma.user.findUnique({
+        where: { id: req.user.id },
+        select: {
+          id: true,
+          username: true,
+          email: true,
+          role: true,
+          created_at: true, 
+          updated_at: true,
+        },
+      });
+  
+      if (!user) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+  
+      res.json({ message: 'User data retrieved', user });
+    } catch (error) {
+      next(error);
+    }
+  };
+  

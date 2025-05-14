@@ -52,7 +52,9 @@ async function getReviewsForProduct(req, res, next) {
     const reviews = await prisma.review.findMany({
       where: { product_id: productId },
     });
-
+  if (reviews.length === 0) {
+      return res.status(200).json({ message: "No reviews for this product yet" });
+    }
     res.status(200).json(reviews);
   } catch (error) {
     next(error);
