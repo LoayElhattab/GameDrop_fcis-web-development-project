@@ -65,7 +65,7 @@ const CartDisplay = ({ cartItems, cartTotal }) => {
           </Box>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
             <Typography variant="body1" sx={{ color: 'text.secondary' }}>Tax (8%)</Typography>
-             {/* Placeholder for tax logic - hardcoded value based on prototype */}
+            {/* Placeholder for tax logic - hardcoded value based on prototype */}
             <Typography variant="body1" sx={{ color: 'text.primary' }}>$15.20</Typography>
           </Box>
 
@@ -75,7 +75,7 @@ const CartDisplay = ({ cartItems, cartTotal }) => {
           <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3 }}>
             <Typography variant="h6" sx={{ color: 'text.primary' }}>Total</Typography>
             {/* Display the total including hardcoded shipping and tax */}
-            <Typography variant="h6" sx={{ color: 'text.primary' }}>${(cartTotal + 15.20).toFixed(2)}</Typography> {/* Adjust calculation based on actual tax/shipping */}
+            <Typography variant="h6" sx={{ color: 'text.primary' }}>${(cartTotal + cartTotal * 0.08).toFixed(2)}</Typography> {/* Adjust calculation based on actual tax/shipping */}
           </Box>
 
           {/* Proceed to Checkout Button */}
@@ -85,9 +85,9 @@ const CartDisplay = ({ cartItems, cartTotal }) => {
             fullWidth // Make button full width
             size="large" // Large size
             onClick={handleCheckoutClick}
-             // Disable if cart is empty or loading
+            // Disable if cart is empty or loading
             disabled={cartItems.length === 0}
-             sx={{
+            sx={{
               // Custom styling to match prototype's purple button
               backgroundColor: '#673ab7', // Example purple color (adjust as needed to match theme)
               '&:hover': {
@@ -103,11 +103,11 @@ const CartDisplay = ({ cartItems, cartTotal }) => {
 
           {/* Free shipping message */}
           <Typography variant="body2" align="center" sx={{ mt: 1, color: 'text.secondary' }}>
-             Free shipping on orders over $35 {/* Hardcoded message based on prototype */}
+            Free shipping on orders over $35 {/* Hardcoded message based on prototype */}
           </Typography>
           {/* Secure payment message */}
           <Typography variant="body2" align="center" sx={{ mt: 0.5, color: 'text.secondary' }}>
-             Secure payment processing {/* Hardcoded message */}
+            Secure payment processing {/* Hardcoded message */}
           </Typography>
         </Paper>
       </Grid>

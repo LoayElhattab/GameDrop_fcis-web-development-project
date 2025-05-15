@@ -3,9 +3,10 @@ import React from 'react';
 import { Card, CardMedia, CardContent, Typography, CardActions, Button, IconButton, Box } from '@mui/material';
 import AddShoppingCartIcon from '@mui/icons-material/AddShoppingCart';
 import { Link } from 'react-router-dom';
+import apiClient from '../api';
 
 // Assume CartContext provides an addToCart function (implemented in TM6)
-// import { useCart } from '../context/CartContext';
+import { useCart } from '../contexts/CartContext';
 
 /**
  * Reusable component to display a single product card.
@@ -22,13 +23,13 @@ import { Link } from 'react-router-dom';
  */
 function ProductCard({ product }) {
     // Use the useCart hook to access cart functionality (uncomment when CartContext is ready)
-    // const { addToCart } = useCart();
+    const { addItem } = useCart();
 
     // Placeholder for addToCart function before CartContext is implemented
     const handleAddToCart = () => {
-        
+
         console.log(`Adding product ${product.id} to cart`);
-        // addToCart(product.id, 1); // Call actual add to cart function
+        addItem(product.id, 1);
     };
 
     const isOutOfStock = product.stock_quantity <= 0;

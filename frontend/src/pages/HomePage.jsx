@@ -28,13 +28,18 @@ function HomePage() {
             try {
                 // Fetch featured games (example: filter by a 'featured' flag or sort)
                 const featuredResponse = await apiClient.get('/products/getProducts', {
-                    params: { isFeatured: true, limit: 4 } // Example filter/limit
+                    params: {
+                        isFeatured: true, limit: 4
+
+                    },
+                    withCredentials: true // Example filter/limit
                 });
                 setFeaturedGames(featuredResponse.data.products || []); // Assuming API returns { products: [...], total: N }
 
                 // Fetch special deals (example: filter by a 'discount' flag or sort by price)
                 const dealsResponse = await apiClient.get('/products/getProducts', {
-                    params: { hasDiscount: true, limit: 4 } // Example filter/limit
+                    params: { hasDiscount: true, limit: 4 },
+                    withCredentials: true // Example filter/limit
                 });
                 setSpecialDeals(dealsResponse.data.products || []); // Assuming API returns { products: [...], total: N }
 

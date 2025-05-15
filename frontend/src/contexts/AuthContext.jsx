@@ -16,6 +16,7 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(() => {
     try {
       const storedUser = localStorage.getItem('user');
+      console.log(JSON.parse(storedUser));
       return storedUser ? JSON.parse(storedUser) : null;
     } catch (error) {
       console.error("Failed to parse user from localStorage:", error);
@@ -115,9 +116,9 @@ export const AuthProvider = ({ children }) => {
         setIsLoading(false);
         return true; // Indicate success
       } else {
-         setError('Registration failed. An unexpected response was received.');
-         setIsLoading(false);
-         return false; // Indicate failure
+        setError('Registration failed. An unexpected response was received.');
+        setIsLoading(false);
+        return false; // Indicate failure
       }
     } catch (err) {
       console.error('Registration failed:', err);
@@ -172,9 +173,11 @@ export const AuthProvider = ({ children }) => {
  */
 export const useAuth = () => {
   const context = useContext(AuthContext);
+  console.log('useAuth context:', context);
   if (context === undefined) {
     throw new Error('useAuth must be used within an AuthProvider');
   }
+  console.log('useAuth context:', context);
   return context;
 };
 
