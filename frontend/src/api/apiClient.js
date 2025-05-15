@@ -11,7 +11,7 @@ const apiClient = axios.create({
 // JWT Interceptor (example - you might handle token storage differently)
 apiClient.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('authToken'); // Or however you store your token
+    const token = localStorage.getItem('token'); // Or however you store your token
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }

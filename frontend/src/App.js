@@ -26,6 +26,7 @@ import ProductDetailPage from './pages/ProductDetailPage';
 import CartPage from './pages/CartPage'; // Make sure this imports the component from pages/CartPage.jsx
 import CheckoutPage from './pages/CheckoutPage'; // Import actual CheckoutPage
 import OrderHistoryPage from './pages/OrderHistoryPage'; // Import actual OrderHistoryPage
+import FilteredProductsSearch from './pages/FilteredProductsPage';
 // import OrderDetailPage from './pages/OrderDetailPage'; // Import actual OrderDetailPage
 // import ProfilePage from './pages/ProfilePage'; // Import actual ProfilePage
 
@@ -59,11 +60,11 @@ const darkTheme = createTheme({
     mode: 'dark',
     // Define your primary and error colors here to match the prototype (e.g., purple for primary)
     primary: {
-       main: '#8b5cf6', // Example purple from your button styles
-       dark: '#7c3aed',
+      main: '#8b5cf6', // Example purple from your button styles
+      dark: '#7c3aed',
     },
     error: {
-       main: '#f44336', // Standard MUI error red (or adjust if prototype uses a different color)
+      main: '#f44336', // Standard MUI error red (or adjust if prototype uses a different color)
     },
     // Add other palette colors if needed
   },
@@ -79,66 +80,66 @@ const darkTheme = createTheme({
       styleOverrides: {
         root: { borderRadius: 20 },
       },
-       variants: [
-         {
-           props: { variant: 'contained', color: 'primary' },
-           style: {
-             backgroundColor: '#8b5cf6',
-             '&:hover': { backgroundColor: '#7c3aed' },
-           },
-         },
-         {
-           props: { variant: 'outlined', color: 'primary' },
-           style: {
-             borderColor: '#8b5cf6',
-             color: '#8b5cf6',
-             '&:hover': {
-               borderColor: '#7c3aed',
-               color: '#7c3aed',
-               backgroundColor: 'rgba(139, 92, 246, 0.08)',
-             },
-           },
-         },
-       ],
+      variants: [
+        {
+          props: { variant: 'contained', color: 'primary' },
+          style: {
+            backgroundColor: '#8b5cf6',
+            '&:hover': { backgroundColor: '#7c3aed' },
+          },
+        },
+        {
+          props: { variant: 'outlined', color: 'primary' },
+          style: {
+            borderColor: '#8b5cf6',
+            color: '#8b5cf6',
+            '&:hover': {
+              borderColor: '#7c3aed',
+              color: '#7c3aed',
+              backgroundColor: 'rgba(139, 92, 246, 0.08)',
+            },
+          },
+        },
+      ],
     },
     MuiTextField: {
-       styleOverrides: {
-         root: {
-           '& .MuiOutlinedInput-root': {
-             '& fieldset': { borderColor: '#4a5568' },
-             '&:hover fieldset': { borderColor: '#a0aec0' },
-             '&.Mui-focused fieldset': { borderColor: '#8b5cf6' },
-           },
-           '& .MuiInputLabel-root': { color: '#a0aec0' },
-           '& .MuiInputBase-input': { color: '#ffffff' },
-         },
-       },
-    },
-     // Add overrides for other components like Card, Paper, etc., here if needed
-      MuiCard: {
-          styleOverrides: {
-              root: {
-                  backgroundColor: '#1e1e1e', // Card background color matching ProductCard
-                  color: '#ffffff', // Default text color for Card content
-              },
+      styleOverrides: {
+        root: {
+          '& .MuiOutlinedInput-root': {
+            '& fieldset': { borderColor: '#4a5568' },
+            '&:hover fieldset': { borderColor: '#a0aec0' },
+            '&.Mui-focused fieldset': { borderColor: '#8b5cf6' },
           },
+          '& .MuiInputLabel-root': { color: '#a0aec0' },
+          '& .MuiInputBase-input': { color: '#ffffff' },
+        },
       },
-       MuiPaper: { // Used for Order Summary in CartDisplay
-           styleOverrides: {
-               root: {
-                   backgroundColor: '#1e1e1e', // Paper background color matching Order Summary
-                   color: '#ffffff', // Default text color
-               },
-           },
-       },
-       MuiDivider: { // Used in CartDisplay and CartItem
-            styleOverrides: {
-                root: {
-                    // Use a slightly lighter divider color than default dark theme if needed
-                    // Example: backgroundColor: 'rgba(255, 255, 255, 0.12)', // Default dark theme divider
-                },
-            },
-       },
+    },
+    // Add overrides for other components like Card, Paper, etc., here if needed
+    MuiCard: {
+      styleOverrides: {
+        root: {
+          backgroundColor: '#1e1e1e', // Card background color matching ProductCard
+          color: '#ffffff', // Default text color for Card content
+        },
+      },
+    },
+    MuiPaper: { // Used for Order Summary in CartDisplay
+      styleOverrides: {
+        root: {
+          backgroundColor: '#1e1e1e', // Paper background color matching Order Summary
+          color: '#ffffff', // Default text color
+        },
+      },
+    },
+    MuiDivider: { // Used in CartDisplay and CartItem
+      styleOverrides: {
+        root: {
+          // Use a slightly lighter divider color than default dark theme if needed
+          // Example: backgroundColor: 'rgba(255, 255, 255, 0.12)', // Default dark theme divider
+        },
+      },
+    },
   },
 });
 
@@ -170,21 +171,21 @@ const App = () => {
                 <Route path="products/:productId" element={<ProductDetailPage />} /> {/* Render ProductDetailPage */}
                 <Route path="login" element={<LoginPage />} /> {/* Render LoginPage */}
                 <Route path="register" element={<RegisterPage />} /> {/* Render RegisterPage */}
-
+                <Route path="/search-results" element={<FilteredProductsSearch />} /> {/* Or choose a different path like "/filtered-products" */}
                 {/* Protected User Routes - Require authentication */}
                 {/* PrivateRoute component handles redirection if not authenticated */}
                 <Route element={<PrivateRoute />}>
-                   {/* These pages will have access to AuthProvider and CartProvider */}
+                  {/* These pages will have access to AuthProvider and CartProvider */}
                   <Route path="cart" element={<CartPage />} /> {/* Render CartPage */}
                   <Route path="checkout" element={<CheckoutPage />} /> {/* Render CheckoutPage */}
                   <Route path="account/orders" element={<OrderHistoryPage />} /> {/* Render OrderHistoryPage */}
                   {/* <Route path="account/orders/:orderId" element={<OrderDetailPage />} /> {/* Render OrderDetailPage */}
-                  {/* <Route path="account/profile" element={<ProfilePage />} /> Render ProfilePage */} 
+                  {/* <Route path="account/profile" element={<ProfilePage />} /> Render ProfilePage */}
                 </Route>
 
                 {/* Fallback route for pages not found within MainLayout */}
                 {/* This will render MainLayout with a "Page Not Found" message in the outlet */}
-                 <Route path="*" element={<Typography variant="h4" sx={{ textAlign: 'center', mt: 4 }}>Page Not Found</Typography>} />
+                <Route path="*" element={<Typography variant="h4" sx={{ textAlign: 'center', mt: 4 }}>Page Not Found</Typography>} />
               </Route>
 
               {/* Admin routes wrapped inside AdminRoute and AdminLayout */}
@@ -192,8 +193,8 @@ const App = () => {
               {/* AdminLayout provides admin-specific layout */}
               <Route element={<AdminRoute />}>
                 <Route path="/admin" element={<AdminLayout />}>
-                   {/* These pages will have access to AuthProvider (for admin check) but might not need CartProvider */}
-                   {/* They are still within CartProvider's scope because AdminRoute is outside the first MainLayout Route */}
+                  {/* These pages will have access to AuthProvider (for admin check) but might not need CartProvider */}
+                  {/* They are still within CartProvider's scope because AdminRoute is outside the first MainLayout Route */}
                   <Route index element={<AdminDashboardPage />} /> {/* Render AdminDashboardPage */}
                   <Route path="products" element={<AdminProductsPage />} /> {/* Render AdminProductsPage */}
                   <Route path="products/new" element={<AdminProductFormPage />} /> {/* Render AdminProductFormPage */}
@@ -201,20 +202,20 @@ const App = () => {
                   <Route path="orders" element={<AdminOrdersPage />} /> {/* Render AdminOrdersPage */}
                   <Route path="users" element={<AdminUsersPage />} /> {/* Render AdminUsersPage */}
                   {/* Fallback route for admin pages not found within AdminLayout */}
-                   <Route path="*" element={<Typography variant="h4" sx={{ textAlign: 'center', mt: 4 }}>Admin Page Not Found</Typography>} />
+                  <Route path="*" element={<Typography variant="h4" sx={{ textAlign: 'center', mt: 4 }}>Admin Page Not Found</Typography>} />
                 </Route>
               </Route>
 
-               {/* If you have any top-level routes outside layouts, define them here */}
-               {/* Example: A 404 page that doesn't use a layout */}
-               {/* <Route path="*" element={<NotFoundPage />} /> */}
+              {/* If you have any top-level routes outside layouts, define them here */}
+              {/* Example: A 404 page that doesn't use a layout */}
+              {/* <Route path="*" element={<NotFoundPage />} /> */}
 
             </Routes>
 
           </CartProvider> {/* <<< End CartProvider <<< */}
         </AuthProvider> {/* <<< End AuthProvider <<< */}
       </Router> {/* End Router */}
-    </ThemeProvider>) ;
-} ;
+    </ThemeProvider>);
+};
 
 export default App;

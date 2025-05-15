@@ -97,7 +97,7 @@ const CheckoutPage = () => {
     try {
       // Call the backend API to create the order
       // Assuming the endpoint is POST /api/orders
-      const response = await apiClient.post('/api/orders', orderData);
+      const response = await apiClient.post('/createOrder', orderData);
 
       // Handle successful order creation
       console.log('Order created successfully:', response.data);
@@ -121,7 +121,7 @@ const CheckoutPage = () => {
   // If cart is empty, redirect or show a message
   // Also check for loading state before rendering
   if (isCartLoading) {
-     return (
+    return (
       <Container maxWidth="lg" sx={{ mt: 4, textAlign: 'center' }}>
         <CircularProgress color="secondary" />
         <Typography variant="h6" sx={{ mt: 2, color: 'text.primary' }}>Loading Cart...</Typography>
@@ -212,16 +212,16 @@ const CheckoutPage = () => {
                         size="small"
                         error={touched.lastName && !!errors.lastName}
                         helperText={touched.lastName && errors.lastName}
-                         InputLabelProps={{ sx: { color: 'text.secondary' } }}
+                        InputLabelProps={{ sx: { color: 'text.secondary' } }}
                         InputProps={{ sx: { color: 'text.primary' } }}
-                         sx={{
+                        sx={{
                           '& .MuiOutlinedInput-root': {
                             '& fieldset': { borderColor: 'divider' },
                             '&:hover fieldset': { borderColor: 'primary.main' },
                             '&.Mui-focused fieldset': { borderColor: 'secondary.main' },
                           },
-                           '& label.Mui-focused': { color: 'secondary.main' },
-                           '& .MuiInputBase-input': { color: 'text.primary' },
+                          '& label.Mui-focused': { color: 'secondary.main' },
+                          '& .MuiInputBase-input': { color: 'text.primary' },
                         }}
                       />
                     </Grid>
@@ -236,16 +236,16 @@ const CheckoutPage = () => {
                         size="small"
                         error={touched.email && !!errors.email}
                         helperText={touched.email && errors.email}
-                         InputLabelProps={{ sx: { color: 'text.secondary' } }}
+                        InputLabelProps={{ sx: { color: 'text.secondary' } }}
                         InputProps={{ sx: { color: 'text.primary' } }}
-                         sx={{
+                        sx={{
                           '& .MuiOutlinedInput-root': {
                             '& fieldset': { borderColor: 'divider' },
                             '&:hover fieldset': { borderColor: 'primary.main' },
                             '&.Mui-focused fieldset': { borderColor: 'secondary.main' },
                           },
-                           '& label.Mui-focused': { color: 'secondary.main' },
-                           '& .MuiInputBase-input': { color: 'text.primary' },
+                          '& label.Mui-focused': { color: 'secondary.main' },
+                          '& .MuiInputBase-input': { color: 'text.primary' },
                         }}
                       />
                     </Grid>
@@ -260,16 +260,16 @@ const CheckoutPage = () => {
                         size="small"
                         error={touched.phoneNumber && !!errors.phoneNumber}
                         helperText={touched.phoneNumber && errors.phoneNumber}
-                         InputLabelProps={{ sx: { color: 'text.secondary' } }}
+                        InputLabelProps={{ sx: { color: 'text.secondary' } }}
                         InputProps={{ sx: { color: 'text.primary' } }}
-                         sx={{
+                        sx={{
                           '& .MuiOutlinedInput-root': {
                             '& fieldset': { borderColor: 'divider' },
                             '&:hover fieldset': { borderColor: 'primary.main' },
                             '&.Mui-focused fieldset': { borderColor: 'secondary.main' },
                           },
-                           '& label.Mui-focused': { color: 'secondary.main' },
-                           '& .MuiInputBase-input': { color: 'text.primary' },
+                          '& label.Mui-focused': { color: 'secondary.main' },
+                          '& .MuiInputBase-input': { color: 'text.primary' },
                         }}
                       />
                     </Grid>
@@ -284,16 +284,16 @@ const CheckoutPage = () => {
                         size="small"
                         error={touched.addressLine1 && !!errors.addressLine1}
                         helperText={touched.addressLine1 && errors.addressLine1}
-                         InputLabelProps={{ sx: { color: 'text.secondary' } }}
+                        InputLabelProps={{ sx: { color: 'text.secondary' } }}
                         InputProps={{ sx: { color: 'text.primary' } }}
-                         sx={{
+                        sx={{
                           '& .MuiOutlinedInput-root': {
                             '& fieldset': { borderColor: 'divider' },
                             '&:hover fieldset': { borderColor: 'primary.main' },
                             '&.Mui-focused fieldset': { borderColor: 'secondary.main' },
                           },
-                           '& label.Mui-focused': { color: 'secondary.main' },
-                           '& .MuiInputBase-input': { color: 'text.primary' },
+                          '& label.Mui-focused': { color: 'secondary.main' },
+                          '& .MuiInputBase-input': { color: 'text.primary' },
                         }}
                       />
                     </Grid>
@@ -306,16 +306,16 @@ const CheckoutPage = () => {
                         fullWidth
                         variant="outlined"
                         size="small"
-                         InputLabelProps={{ sx: { color: 'text.secondary' } }}
+                        InputLabelProps={{ sx: { color: 'text.secondary' } }}
                         InputProps={{ sx: { color: 'text.primary' } }}
-                         sx={{
+                        sx={{
                           '& .MuiOutlinedInput-root': {
                             '& fieldset': { borderColor: 'divider' },
                             '&:hover fieldset': { borderColor: 'primary.main' },
                             '&.Mui-focused fieldset': { borderColor: 'secondary.main' },
                           },
-                           '& label.Mui-focused': { color: 'secondary.main' },
-                           '& .MuiInputBase-input': { color: 'text.primary' },
+                          '& label.Mui-focused': { color: 'secondary.main' },
+                          '& .MuiInputBase-input': { color: 'text.primary' },
                         }}
                       />
                     </Grid>
@@ -330,22 +330,22 @@ const CheckoutPage = () => {
                         size="small"
                         error={touched.city && !!errors.city}
                         helperText={touched.city && errors.city}
-                         InputLabelProps={{ sx: { color: 'text.secondary' } }}
+                        InputLabelProps={{ sx: { color: 'text.secondary' } }}
                         InputProps={{ sx: { color: 'text.primary' } }}
-                         sx={{
+                        sx={{
                           '& .MuiOutlinedInput-root': {
                             '& fieldset': { borderColor: 'divider' },
                             '&:hover fieldset': { borderColor: 'primary.main' },
                             '&.Mui-focused fieldset': { borderColor: 'secondary.main' },
                           },
-                           '& label.Mui-focused': { color: 'secondary.main' },
-                           '& .MuiInputBase-input': { color: 'text.primary' },
+                          '& label.Mui-focused': { color: 'secondary.main' },
+                          '& .MuiInputBase-input': { color: 'text.primary' },
                         }}
                       />
                     </Grid>
                     {/* State */}
                     <Grid item xs={12} sm={4}>
-                       <Field
+                      <Field
                         as={TextField}
                         name="state"
                         label="State"
@@ -355,20 +355,20 @@ const CheckoutPage = () => {
                         size="small"
                         error={touched.state && !!errors.state}
                         helperText={touched.state && errors.state}
-                         InputLabelProps={{ sx: { color: 'text.secondary' } }}
-                         InputProps={{ sx: { color: 'text.primary' } }}
-                         sx={{
+                        InputLabelProps={{ sx: { color: 'text.secondary' } }}
+                        InputProps={{ sx: { color: 'text.primary' } }}
+                        sx={{
                           '& .MuiOutlinedInput-root': {
                             '& fieldset': { borderColor: 'divider' },
                             '&:hover fieldset': { borderColor: 'primary.main' },
                             '&.Mui-focused fieldset': { borderColor: 'secondary.main' },
                           },
-                           '& label.Mui-focused': { color: 'secondary.main' },
-                           '& .MuiInputBase-input': { color: 'text.primary' },
-                           '.MuiSelect-icon': { color: 'text.secondary' } // Style dropdown arrow
+                          '& label.Mui-focused': { color: 'secondary.main' },
+                          '& .MuiInputBase-input': { color: 'text.primary' },
+                          '.MuiSelect-icon': { color: 'text.secondary' } // Style dropdown arrow
                         }}
                       >
-                         {states.map((option) => (
+                        {states.map((option) => (
                           <MenuItem key={option.value} value={option.value}>
                             {option.label}
                           </MenuItem>
@@ -386,22 +386,22 @@ const CheckoutPage = () => {
                         size="small"
                         error={touched.zipCode && !!errors.zipCode}
                         helperText={touched.zipCode && errors.zipCode}
-                         InputLabelProps={{ sx: { color: 'text.secondary' } }}
+                        InputLabelProps={{ sx: { color: 'text.secondary' } }}
                         InputProps={{ sx: { color: 'text.primary' } }}
-                         sx={{
+                        sx={{
                           '& .MuiOutlinedInput-root': {
                             '& fieldset': { borderColor: 'divider' },
                             '&:hover fieldset': { borderColor: 'primary.main' },
                             '&.Mui-focused fieldset': { borderColor: 'secondary.main' },
                           },
-                           '& label.Mui-focused': { color: 'secondary.main' },
-                           '& .MuiInputBase-input': { color: 'text.primary' },
+                          '& label.Mui-focused': { color: 'secondary.main' },
+                          '& .MuiInputBase-input': { color: 'text.primary' },
                         }}
                       />
                     </Grid>
                     {/* Country */}
-                     <Grid item xs={12} sm={6}>
-                       <Field
+                    <Grid item xs={12} sm={6}>
+                      <Field
                         as={TextField}
                         name="country"
                         label="Country"
@@ -411,20 +411,20 @@ const CheckoutPage = () => {
                         size="small"
                         error={touched.country && !!errors.country}
                         helperText={touched.country && errors.country}
-                         InputLabelProps={{ sx: { color: 'text.secondary' } }}
-                         InputProps={{ sx: { color: 'text.primary' } }}
-                         sx={{
+                        InputLabelProps={{ sx: { color: 'text.secondary' } }}
+                        InputProps={{ sx: { color: 'text.primary' } }}
+                        sx={{
                           '& .MuiOutlinedInput-root': {
                             '& fieldset': { borderColor: 'divider' },
                             '&:hover fieldset': { borderColor: 'primary.main' },
                             '&.Mui-focused fieldset': { borderColor: 'secondary.main' },
                           },
-                           '& label.Mui-focused': { color: 'secondary.main' },
-                           '& .MuiInputBase-input': { color: 'text.primary' },
-                           '.MuiSelect-icon': { color: 'text.secondary' } // Style dropdown arrow
+                          '& label.Mui-focused': { color: 'secondary.main' },
+                          '& .MuiInputBase-input': { color: 'text.primary' },
+                          '.MuiSelect-icon': { color: 'text.secondary' } // Style dropdown arrow
                         }}
                       >
-                         {countries.map((option) => (
+                        {countries.map((option) => (
                           <MenuItem key={option.value} value={option.value}>
                             {option.label}
                           </MenuItem>
@@ -433,35 +433,35 @@ const CheckoutPage = () => {
                     </Grid>
 
                     {/* Simulated Payment Selection (Placeholder) */}
-                     <Grid item xs={12} sm={6}>
-                       <TextField
-                          label="Shipping Method"
-                          select
-                          fullWidth
-                          variant="outlined"
-                          size="small"
-                          defaultValue="standard" // Default selected value
-                          InputLabelProps={{ sx: { color: 'text.secondary' } }}
-                          InputProps={{ sx: { color: 'text.primary' } }}
-                           sx={{
-                            '& .MuiOutlinedInput-root': {
-                              '& fieldset': { borderColor: 'divider' },
-                              '&:hover fieldset': { borderColor: 'primary.main' },
-                              '&.Mui-focused fieldset': { borderColor: 'secondary.main' },
-                            },
-                             '& label.Mui-focused': { color: 'secondary.main' },
-                             '& .MuiInputBase-input': { color: 'text.primary' },
-                             '.MuiSelect-icon': { color: 'text.secondary' } // Style dropdown arrow
-                          }}
-                       >
-                         <MenuItem value="standard">
-                           Standard Shipping (3-5 business days) - Free
-                         </MenuItem>
-                         <MenuItem value="express">
-                           Express Shipping (1-2 business days) - $12.99
-                         </MenuItem>
-                       </TextField>
-                     </Grid>
+                    <Grid item xs={12} sm={6}>
+                      <TextField
+                        label="Shipping Method"
+                        select
+                        fullWidth
+                        variant="outlined"
+                        size="small"
+                        defaultValue="standard" // Default selected value
+                        InputLabelProps={{ sx: { color: 'text.secondary' } }}
+                        InputProps={{ sx: { color: 'text.primary' } }}
+                        sx={{
+                          '& .MuiOutlinedInput-root': {
+                            '& fieldset': { borderColor: 'divider' },
+                            '&:hover fieldset': { borderColor: 'primary.main' },
+                            '&.Mui-focused fieldset': { borderColor: 'secondary.main' },
+                          },
+                          '& label.Mui-focused': { color: 'secondary.main' },
+                          '& .MuiInputBase-input': { color: 'text.primary' },
+                          '.MuiSelect-icon': { color: 'text.secondary' } // Style dropdown arrow
+                        }}
+                      >
+                        <MenuItem value="standard">
+                          Standard Shipping (3-5 business days) - Free
+                        </MenuItem>
+                        <MenuItem value="express">
+                          Express Shipping (1-2 business days) - $12.99
+                        </MenuItem>
+                      </TextField>
+                    </Grid>
 
                     {/* Error/Success Messages */}
                     {orderError && (
@@ -469,7 +469,7 @@ const CheckoutPage = () => {
                         <Alert severity="error">{orderError}</Alert>
                       </Grid>
                     )}
-                     {orderSuccess && (
+                    {orderSuccess && (
                       <Grid item xs={12}>
                         <Alert severity="success">Order placed successfully!</Alert>
                       </Grid>
@@ -555,11 +555,11 @@ const CheckoutPage = () => {
             </Box>
 
             {/* Additional information */}
-             <Typography variant="body2" align="center" sx={{ mt: 1, color: 'text.secondary' }}>
-               Free shipping on orders over $35 {/* Hardcoded message */}
+            <Typography variant="body2" align="center" sx={{ mt: 1, color: 'text.secondary' }}>
+              Free shipping on orders over $35 {/* Hardcoded message */}
             </Typography>
             <Typography variant="body2" align="center" sx={{ mt: 0.5, color: 'text.secondary' }}>
-               Secure payment processing {/* Hardcoded message */}
+              Secure payment processing {/* Hardcoded message */}
             </Typography>
           </Paper>
         </Grid>

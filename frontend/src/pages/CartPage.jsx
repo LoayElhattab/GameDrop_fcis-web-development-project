@@ -23,9 +23,9 @@ const CartPage = () => {
   // Let's remove the explicit fetch here to rely solely on the CartProvider's initial fetch
   // as per TRD (State Management section implying global state managed by context).
   // If a "refresh cart" button were required, we'd use fetchCart in a handler.
-  // useEffect(() => {
-  //   fetchCart();
-  // }, []); // Empty dependency array means this runs once on mount
+  useEffect(() => {
+    fetchCart();
+  }, []); // Empty dependency array means this runs once on mount
 
   // Conditional rendering based on loading state and cart items
   if (isLoading) {

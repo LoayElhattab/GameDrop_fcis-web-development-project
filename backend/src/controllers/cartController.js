@@ -16,7 +16,7 @@ const getCart = async (req, res, next) => {
                 user_id: userId,
             },
             include: {
-                items: { 
+                items: {
                     include: {
                         product: true,
                     },
@@ -30,8 +30,8 @@ const getCart = async (req, res, next) => {
                 data: {
                     user_id: userId,
                 },
-                include: { 
-                    items: { 
+                include: {
+                    items: {
                         include: {
                             product: true,
                         },
@@ -69,16 +69,16 @@ const addItemToCart = async (req, res, next) => {
             return next(error);
         }
         if (quantity <= 0) {
-             const error = new Error('Quantity must be positive');
-             error.statusCode = 400;
-             return next(error);
+            const error = new Error('Quantity must be positive');
+            error.statusCode = 400;
+            return next(error);
         }
 
 
         // Find the user's cart (create if needed)
         let cart = await prisma.cart.findUnique({
-            where: { user_id: userId }, 
-            include: { items: true }, 
+            where: { user_id: userId },
+            include: { items: true },
         });
 
         if (!cart) {
@@ -99,7 +99,7 @@ const addItemToCart = async (req, res, next) => {
             return next(error);
         }
 
-         if (product.stock_quantity < quantity) {
+        if (product.stock_quantity < quantity) {
             const error = new Error(`Insufficient stock for ${product.title}. Available: ${product.stock_quantity}`);
             error.statusCode = 400;
             return next(error);
@@ -115,17 +115,17 @@ const addItemToCart = async (req, res, next) => {
             // If item exists, update the quantity
             const newQuantity = existingCartItem.quantity + quantity;
 
-             // Re-check stock with the *new* total quantity
-             if (product.stock_quantity < newQuantity) {
+            // Re-check stock with the *new* total quantity
+            if (product.stock_quantity < newQuantity) {
                 const error = new Error(`Adding ${quantity} exceeds stock for ${product.title}. Available: ${product.stock_quantity - existingCartItem.quantity}`);
                 error.statusCode = 400;
                 return next(error);
-             }
+            }
 
             updatedCartItem = await prisma.cartItem.update({
                 where: { id: existingCartItem.id },
                 data: { quantity: newQuantity },
-                 include: { product: true } // Include product details for response
+                include: { product: true } // Include product details for response
             });
             res.status(200).json(updatedCartItem); // Return the updated item
         } else {
@@ -138,7 +138,7 @@ const addItemToCart = async (req, res, next) => {
                 },
                 include: { product: true } // Include product details for response
             });
-             res.status(201).json(updatedCartItem); // Return the newly created item
+            res.status(201).json(updatedCartItem); // Return the newly created item
         }
 
 
@@ -155,16 +155,16 @@ const addItemToCart = async (req, res, next) => {
 const updateCartItemQuantity = async (req, res, next) => {
     try {
         const userId = req.user.id;
-        const { productId: product_id  } = req.params;
+        const { productId: product_id } = req.params;
         const { quantity } = req.body;
 
         // Validate input
         if (quantity === undefined || quantity === null || quantity < 0) {
-             const error = new Error('Valid quantity (0 or greater) is required');
-             error.statusCode = 400;
-             return next(error);
+            const error = new Error('Valid quantity (0 or greater) is required');
+            error.statusCode = 400;
+            return next(error);
         }
-         if (!product_id) {
+        if (!product_id) {
             const error = new Error('Product ID is required in parameters');
             error.statusCode = 400;
             return next(error);
@@ -178,13 +178,13 @@ const updateCartItemQuantity = async (req, res, next) => {
         });
 
         if (!cart) {
-             // This case should ideally not happen if protect middleware ensures a user exists,
-             // but defensive coding is good. A user must have a cart implicitly.
-             // If a user is logged in but somehow has no cart, getCart would create it.
-             // However, this endpoint modifies an *existing* item, so if there's no cart, there's no item to modify.
-             const error = new Error('User cart not found');
-             error.statusCode = 404; // Or 400 depending on desired behavior
-             return next(error);
+            // This case should ideally not happen if protect middleware ensures a user exists,
+            // but defensive coding is good. A user must have a cart implicitly.
+            // If a user is logged in but somehow has no cart, getCart would create it.
+            // However, this endpoint modifies an *existing* item, so if there's no cart, there's no item to modify.
+            const error = new Error('User cart not found');
+            error.statusCode = 404; // Or 400 depending on desired behavior
+            return next(error);
         }
 
         // Find the specific cart item
@@ -205,22 +205,22 @@ const updateCartItemQuantity = async (req, res, next) => {
         }
 
         // Check stock for the updated quantity
-         const product = await prisma.product.findUnique({
-             where: { id: product_id },
-         });
+        const product = await prisma.product.findUnique({
+            where: { id: product_id },
+        });
 
-         if (!product) {
-             // Should not happen if schema is correct and product is in cart item, but check
-             const error = new Error('Associated product not found');
-             error.statusCode = 404;
-             return next(error);
-         }
+        if (!product) {
+            // Should not happen if schema is correct and product is in cart item, but check
+            const error = new Error('Associated product not found');
+            error.statusCode = 404;
+            return next(error);
+        }
 
-         if (product.stock_quantity < quantity) {
-             const error = new Error(`Cannot update quantity to ${quantity}. Available stock: ${product.stock_quantity}`);
-             error.statusCode = 400;
-             return next(error);
-         }
+        if (product.stock_quantity < quantity) {
+            const error = new Error(`Cannot update quantity to ${quantity}. Available stock: ${product.stock_quantity}`);
+            error.statusCode = 400;
+            return next(error);
+        }
 
 
         // Update the quantity
@@ -245,7 +245,7 @@ const removeCartItem = async (req, res, next) => {
         const userId = req.user.id;
         const { productId: product_id } = req.params;
 
-         if (!product_id) {
+        if (!product_id) {
             const error = new Error('Product ID is required in parameters');
             error.statusCode = 400;
             return next(error);
@@ -258,12 +258,12 @@ const removeCartItem = async (req, res, next) => {
             include: { items: true },
         });
 
-         if (!cart) {
-             // Should not happen typically, see comments in updateCartItemQuantity
-             const error = new Error('User cart not found');
-             error.statusCode = 404; // Or 400
-             return next(error);
-         }
+        if (!cart) {
+            // Should not happen typically, see comments in updateCartItemQuantity
+            const error = new Error('User cart not found');
+            error.statusCode = 404; // Or 400
+            return next(error);
+        }
 
 
         // Find the specific cart item

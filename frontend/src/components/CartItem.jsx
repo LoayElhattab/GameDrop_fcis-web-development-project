@@ -130,25 +130,25 @@ const CartItem = ({ item }) => {
 
         {/* Item Price */}
         <Grid item xs={6} sm={2} sx={{ textAlign: { xs: 'right', sm: 'left' } }}>
-           <Typography variant="body1" sx={{ fontWeight: 'bold', color: 'text.primary' }}>
-            ${(item.product?.price || 0).toFixed(2)} {/* Display individual item price */}
+          <Typography variant="body1" sx={{ fontWeight: 'bold', color: 'text.primary' }}>
+            ${parseFloat(item.product?.price || 0).toFixed(2)} {/* Display individual item price */}
           </Typography>
         </Grid>
 
-         {/* Remove Button */}
-         <Grid item xs={12} sm={1} sx={{ textAlign: { xs: 'left', sm: 'right' } }}>
-           <Button
-             variant="text"
-             color="error" // Use error color for remove button
-             size="small"
-             onClick={handleRemoveItem}
-             disabled={isLoading}
-             startIcon={<DeleteOutlineIcon />} // Add a delete icon
-             sx={{ textTransform: 'none' }} // Prevent uppercase text
-           >
-             Remove
-           </Button>
-         </Grid>
+        {/* Remove Button */}
+        <Grid item xs={12} sm={1} sx={{ textAlign: { xs: 'left', sm: 'right' } }}>
+          <Button
+            variant="text"
+            color="error" // Use error color for remove button
+            size="small"
+            onClick={handleRemoveItem}
+            disabled={isLoading}
+            startIcon={<DeleteOutlineIcon />} // Add a delete icon
+            sx={{ textTransform: 'none' }} // Prevent uppercase text
+          >
+            Remove
+          </Button>
+        </Grid>
       </Grid>
     </Paper>
   );
