@@ -5,7 +5,7 @@ import apiClient from '../api/apiClient'; // Assuming apiClient is configured he
 import ProductCard from '../components/ProductCard'; // ProductCard component
 import ProductSearch from '../components/ProductSearch'; // ProductSearch component
 import ProductFilter from '../components/ProductFilter'; // ProductFilter component
-import { useSearchParams } from 'react-router-dom'; // Hook for URL parameters
+import { useSearchParams, useNavigate } from 'react-router-dom'; // Hook for URL parameters
 
 function FilteredProductsSearch() {
     const [products, setProducts] = useState([]);
@@ -25,14 +25,14 @@ function FilteredProductsSearch() {
 
     // Calculate total pages
     const totalPages = Math.ceil(totalProducts / limit);
-
+    const navigate = useNavigate();
     // Memoize the fetch function to avoid unnecessary re-creations
     const fetchProducts = useCallback(async () => {
         setLoading(true);
         setError(null);
         try {
             // Fetch products from the backend API using current search, filter, and pagination params
-            const response = await apiClient.get('/api/products', { // Ensure this endpoint is correct
+            const response = await apiClient.get('/products/getProducts', { // Ensure this endpoint is correct
                 params: {
                     search: searchTerm || undefined, // Only include if not empty
                     platform: platformFilter || undefined, // Only include if not empty
@@ -58,7 +58,6 @@ function FilteredProductsSearch() {
 
     // Handler for search submission (updates URL param)
     const handleSearchSubmit = (value) => {
-        // Update the 'search' query parameter in the URL
         setSearchParams(prevParams => {
             const newParams = new URLSearchParams(prevParams);
             if (value) {
@@ -103,8 +102,13 @@ function FilteredProductsSearch() {
     // For now, we'll just pass it to the ProductSearch component, but the actual filtering
     // happens on submit via handleSearchSubmit.
     const handleSearchInputChange = (value) => {
-        // If you wanted live search as the user types, you would update a local state here
-        // and potentially trigger a debounced fetch. For now, search is triggered on submit.
+        if (searchTerm.trim()) { // Only navigate if the search term is not empty
+            // Navigate to the /products page with the search term as a query parameter
+            navigate(`/search-results?search=${encodeURIComponent(searchTerm.trim())}`);
+        } else {
+            // Optional: Show a message or just navigate to products page without search
+            navigate('/products/getProducts');
+        }
     };
 
 
@@ -138,18 +142,7 @@ function FilteredProductsSearch() {
                     Search Results
                 </Typography>
 
-                {/* Search and Filter Components */}
-                <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 3, mb: 4, alignItems: 'center' }}>
-                    <ProductSearch
-                        searchTerm={searchTerm} // Pass current search term from URL
-                        onSearchChange={handleSearchInputChange} // Handler for input change (doesn't trigger fetch yet)
-                        onSearchSubmit={(value) => handleSearchSubmit(value || searchTerm)} // Handler for submit (triggers fetch)
-                    />
-                    <ProductFilter
-                        filterCriteria={{ platform: platformFilter, genre: genreFilter }} // Pass current filters from URL
-                        onFilterChange={handleFilterChange} // Handler for filter change (triggers fetch)
-                    />
-                </Box>
+
 
 
                 {/* Product Grid */}

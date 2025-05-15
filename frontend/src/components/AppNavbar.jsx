@@ -56,10 +56,10 @@ const AppNavbar = () => {
   const handleSearchSubmit = () => {
     if (searchTerm.trim()) { // Only navigate if the search term is not empty
       // Navigate to the /products page with the search term as a query parameter
-      navigate(`/products?search=${encodeURIComponent(searchTerm.trim())}`);
+      navigate(`/search-results?search=${encodeURIComponent(searchTerm.trim())}`);
     } else {
       // Optional: Show a message or just navigate to products page without search
-      navigate('/products');
+      navigate('/products/getProducts');
     }
   };
   const buildQueryParams = (currentSearchTerm, currentFilterCriteria) => {
@@ -83,7 +83,7 @@ const AppNavbar = () => {
     setFilterCriteria(newFilterCriteria);
     const params = buildQueryParams(searchTerm, newFilterCriteria);
     // Navigate to the /products page with the search term as a query parameter
-    navigate(`/products${params ? `?${params}` : ''}`);
+    navigate(`/search-results${params ? `?${params}` : ''}`);
   };
   return (
     <AppBar position="static" sx={navbarStyles}>
