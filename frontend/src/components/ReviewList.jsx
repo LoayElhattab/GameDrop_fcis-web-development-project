@@ -1,14 +1,15 @@
 // gamedrop-frontend/src/components/ReviewList.jsx
 import React from 'react';
-// Import necessary Material UI components for both ReviewList and ReviewItem
+// Import necessary Material UI components for both ReviewList and the nested ReviewItem
 import { Box, Typography, Divider } from '@mui/material';
 // Optional: Import Rating if you are using it for reviews
 import Rating from '@mui/material/Rating';
-
+// REMOVE the import for ReviewItem since it's defined here
+// import ReviewItem from './ReviewItem';
 
 // Component to display a single review (defined within this file)
 const ReviewItem = ({ review }) => {
-    // Assuming your review object has fields like 'rate', 'comment', 'user', 'created_at'
+    // Assuming your review object has fields like 'rate', 'comment', 'user' (with username), 'created_at'
     return (
         <Box sx={{ mb: 2, p: 2, backgroundColor: '#2a2a2a', borderRadius: 1 }}>
             {/* Display Username */}
@@ -17,11 +18,11 @@ const ReviewItem = ({ review }) => {
             </Typography>
 
             {/* Display Rating if available */}
-            {review.rate !== undefined && review.rate !== null && (
+            {review.rating !== undefined && review.rating !== null && (
                 <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
                     {/* Use review.rate for the rating value */}
-                    <Rating value={review.rate} readOnly precision={1} size="small" sx={{ color: '#ffb74d' }} />
-                    <Typography variant="body2" sx={{ color: '#bdbdbd', ml: 1 }}>{review.rate}/5</Typography>
+                    <Rating value={review.rating} readOnly precision={1} size="small" sx={{ color: '#ffb74d' }} />
+                    <Typography variant="body2" sx={{ color: '#bdbdbd', ml: 1 }}>{review.rating}/5</Typography>
                 </Box>
             )}
 
@@ -62,6 +63,8 @@ const ReviewList = ({ reviews }) => {
                 // Assuming each review object has a unique 'id' provided by the backend
                 <ReviewItem key={review.id} review={review} />
             ))}
+            {/* Divider between review list and form - this might be better placed in ProductDetailPage */}
+            {/* <Divider sx={{ backgroundColor: '#424242', my: 3 }} /> */}
         </Box>
     );
 };

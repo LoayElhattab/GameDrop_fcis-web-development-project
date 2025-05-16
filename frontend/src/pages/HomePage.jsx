@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { Box, Typography, Button, Container, Grid, Card, CardContent } from '@mui/material';
 import apiClient from '../api/apiClient'; // Assuming apiClient is configured here
 import ProductCard from '../components/ProductCard'; // Assuming ProductCard is created here
-import { Link } from 'react-router-dom'; // Import Link and useNavigate
+import { Link, useNavigate } from 'react-router-dom'; // Import Link and useNavigate
 import playstationIcon from '../assets/images/PS.png'; // Adjust path based on your exact structure
 import xboxIcon from '../assets/images/Xbox.png';   // Adjust path
 import nintendoIcon from '../assets/images/Nintendo.png'; // Adjust path
@@ -16,13 +16,12 @@ const platforms = [
     { name: 'Nintendo', image: nintendoIcon },
     { name: 'PC', image: pcIcon },
 ];
-
 function HomePage() {
     const [featuredGames, setFeaturedGames] = useState([]);
     const [specialDeals, setSpecialDeals] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);// State for the search input
-
+    const navigate = useNavigate();
     useEffect(() => {
         const fetchProducts = async () => {
             try {
@@ -108,10 +107,10 @@ function HomePage() {
 
                     <Box sx={{ mt: 4 }}> {/* Add spacing above buttons */}
                         <Button
+                            onClick={() => navigate('/search-results')}
                             variant="contained"
                             color="primary"
                             size="large"
-                            component={Link}
                             to="/products"
                             sx={{ mr: 2, backgroundColor: '#7e57c2', '&:hover': { backgroundColor: '#673ab7' } }}
                         >
@@ -138,37 +137,41 @@ function HomePage() {
                     </Typography>
                     <Grid container spacing={3}>
                         {platforms.map((platform) => (
-                            <Grid item xs={12} sm={6} md={3} key={platform.name}>
-                                <Card
-                                    sx={{
-                                        backgroundColor: '#1e1e1e', // Dark card background
-                                        color: '#ffffff',
-                                        textAlign: 'center',
-                                        height: '100%',
-                                        display: 'flex',
-                                        flexDirection: 'column',
-                                        justifyContent: 'center',
-                                        alignItems: 'center',
-                                        padding: 2,
-                                        '&:hover': {
-                                            backgroundColor: '#2a2a2a',
-                                            cursor: 'pointer',
-                                        },
-                                    }}
-                                // You might add a Link component here later to navigate to platform-filtered products
-                                // For example: component={Link} to={`/products?platform=${encodeURIComponent(platform.name)}`}
-                                >
-                                    {/* Placeholder for platform icon/image */}
-                                    <Box sx={{ width: 60, height: 60, backgroundColor: '#424242', borderRadius: '50%', mb: 1 }} >
-                                        <img
-                                            src={platform.image || ''} // Use platform image or a generic placeholder
-                                            alt={`${platform.name} Icon`}
-                                            style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} // Style the image to fit and cover the circular container
-                                        />
-                                    </Box>
-                                    <Typography variant="h6">{platform.name}</Typography>
-                                </Card>
-                            </Grid>
+                            <Button
+                                onClick={() => navigate(`/search-results?platform=${encodeURIComponent(platform.name)}`)}
+                            >
+                                <Grid item xs={12} sm={6} md={3} key={platform.name}>
+                                    <Card
+                                        sx={{
+                                            backgroundColor: '#1e1e1e', // Dark card background
+                                            color: '#ffffff',
+                                            textAlign: 'center',
+                                            height: '100%',
+                                            display: 'flex',
+                                            flexDirection: 'column',
+                                            justifyContent: 'center',
+                                            alignItems: 'center',
+                                            padding: 2,
+                                            '&:hover': {
+                                                backgroundColor: '#2a2a2a',
+                                                cursor: 'pointer',
+                                            },
+                                        }}
+                                    // You might add a Link component here later to navigate to platform-filtered products
+                                    // For example: component={Link} to={`/products?platform=${encodeURIComponent(platform.name)}`}
+                                    >
+                                        {/* Placeholder for platform icon/image */}
+                                        <Box sx={{ width: 60, height: 60, backgroundColor: '#424242', borderRadius: '50%', mb: 1 }} >
+                                            <img
+                                                src={platform.image || ''} // Use platform image or a generic placeholder
+                                                alt={`${platform.name} Icon`}
+                                                style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} // Style the image to fit and cover the circular container
+                                            />
+                                        </Box>
+                                        <Typography variant="h6">{platform.name}</Typography>
+                                    </Card>
+                                </Grid>
+                            </Button>
                         ))}
                     </Grid>
                 </Box>
