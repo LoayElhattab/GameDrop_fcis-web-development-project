@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import {
     Box, Typography, Paper, Table, TableBody, TableCell, TableContainer,
     TableHead, TableRow, Button, CircularProgress, Alert, TextField, InputAdornment,
-    TablePagination, IconButton, Dialog, DialogTitle, DialogContent, DialogActions
+    TablePagination, IconButton, Dialog, DialogTitle, DialogContent, DialogActions, Snackbar
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import EditIcon from '@mui/icons-material/Edit';
@@ -12,6 +12,7 @@ import { useNavigate } from 'react-router-dom';
 import apiClient from '../../api';
 import { useAuth } from '../../contexts/AuthContext';
 import AdminProductFormPage from './AdminProductFormPage';
+import MuiAlert from '@mui/material/Alert';
 
 /**
  * Admin Products Management Page Component.
@@ -33,7 +34,7 @@ const AdminProductsPage = () => {
     const [productToDelete, setProductToDelete] = useState(null);
     const [formDialogOpen, setFormDialogOpen] = useState(false);
     const [productToEditId, setProductToEditId] = useState(null);
-    const [deleteQuantity, setDeleteQuantity] = useState(0);
+    const [snackbarOpen, setSnackbarOpen] = useState(false);
 
     const fetchProducts = async () => {
         setLoading(true);
@@ -112,29 +113,16 @@ const AdminProductsPage = () => {
         setError(null);
 
         try {
-            const payload = {};
-            if (deleteQuantity >= productToDelete.stock_quantity) {
-                payload.is_deleted = true;
-                await apiClient.patch(`./products/${productToDelete.id}`, payload);
-                setProducts(products.filter(p => p.id !== productToDelete.id));
-                setTotalProducts(totalProducts - 1);
-            } else if (deleteQuantity > 0) {
-                payload.stock_quantity = deleteQuantity;
-                await apiClient.patch(`./products/${productToDelete.id}`, payload);
-                setProducts(products.map(p => 
-                    p.id === productToDelete.id ? { ...p, stock_quantity: p.stock_quantity - deleteQuantity } : p
-                ).filter(p => p.stock_quantity > 0)); // Filter out if stock becomes 0 after update
-            } else {
-                setError('Please enter a valid quantity (greater than zero).');
-                setLoading(false);
-                return;
-            }
+            const payload = { is_deleted: true };
+            await apiClient.patch(`./products/${productToDelete.id}`, payload);
+            setProducts(products.filter(p => p.id !== productToDelete.id));
+            setTotalProducts(totalProducts - 1);
             setDeleteDialogOpen(false);
             setProductToDelete(null);
-            setDeleteQuantity(0);
+            setSnackbarOpen(true); // Open snackbar on successful deletion
         } catch (err) {
             console.error('Error in deletion:', err.response ? err.response.data : err);
-            setError(err.response?.data?.error || 'Failed to update product, this may be due to a foreign key constraint or invalid quantity.');
+            setError(err.response?.data?.error || 'Failed to delete product, this may be due to a foreign key constraint.');
         } finally {
             setLoading(false);
         }
@@ -142,14 +130,17 @@ const AdminProductsPage = () => {
 
     const openDeleteDialog = (product) => {
         setProductToDelete(product);
-        setDeleteQuantity(0);
         setDeleteDialogOpen(true);
     };
 
     const closeDeleteDialog = () => {
         setDeleteDialogOpen(false);
         setProductToDelete(null);
-        setDeleteQuantity(0);
+    };
+
+    const handleCloseSnackbar = (event, reason) => {
+        if (reason === 'clickaway') return;
+        setSnackbarOpen(false);
     };
 
     const paperStyles = {
@@ -312,26 +303,11 @@ const AdminProductsPage = () => {
                 </DialogTitle>
                 <DialogContent>
                     <Typography variant="body1" color="text.secondary" sx={{ mb: 2 }}>
-                        Are you sure you want to delete items from product: <strong>{productToDelete?.title}</strong>?
+                        Are you sure you want to delete the product: <strong>{productToDelete?.title}</strong>?
                     </Typography>
                     <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
                         Current stock: {productToDelete?.stock_quantity}
                     </Typography>
-                    <TextField
-                        label="Quantity to Delete"
-                        type="number"
-                        value={deleteQuantity}
-                        onChange={(e) => {
-                            const value = parseInt(e.target.value, 10) || 0;
-                            setDeleteQuantity(Math.min(value, productToDelete?.stock_quantity || 0));
-                        }}
-                        InputProps={{
-                            inputProps: { min: 0, max: productToDelete?.stock_quantity || 0 }
-                        }}
-                        fullWidth
-                        sx={{ mt: 2 }}
-                        helperText={`Enter a number between 0 and ${productToDelete?.stock_quantity}`}
-                    />
                 </DialogContent>
                 <DialogActions>
                     <Button onClick={closeDeleteDialog} color="secondary">
@@ -372,6 +348,23 @@ const AdminProductsPage = () => {
                     )}
                 </DialogContent>
             </Dialog>
+
+            <Snackbar
+                open={snackbarOpen}
+                autoHideDuration={3000}
+                onClose={handleCloseSnackbar}
+                anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+            >
+                <MuiAlert
+                    elevation={6}
+                    variant="filled"
+                    onClose={handleCloseSnackbar}
+                    severity="success"
+                    sx={{ width: '100%' }}
+                >
+                    Product deleted successfully
+                </MuiAlert>
+            </Snackbar>
         </Box>
     );
 };
