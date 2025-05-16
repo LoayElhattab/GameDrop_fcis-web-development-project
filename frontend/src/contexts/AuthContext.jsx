@@ -1,8 +1,5 @@
-// gamedrop-frontend/src/contexts/AuthContext.jsx
-
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import apiClient from '../api'; // Import the configured axios instance
-import { useNavigate } from 'react-router-dom'; // Import useNavigate for redirection
 
 // Create the Auth Context
 const AuthContext = createContext(null);
@@ -16,19 +13,22 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(() => {
     try {
       const storedUser = localStorage.getItem('user');
-      console.log(JSON.parse(storedUser));
-      return storedUser ? JSON.parse(storedUser) : null;
+      const parsedUser = storedUser ? JSON.parse(storedUser) : null;
+      console.log('Parsed user from localStorage:', parsedUser);
+      return parsedUser;
     } catch (error) {
-      console.error("Failed to parse user from localStorage:", error);
+      console.error('Failed to parse user from localStorage:', error);
       return null;
     }
   });
 
   const [token, setToken] = useState(() => {
     try {
-      return localStorage.getItem('token') || null;
+      const storedToken = localStorage.getItem('token') || null;
+      console.log('Parsed token from localStorage:', storedToken);
+      return storedToken;
     } catch (error) {
-      console.error("Failed to get token from localStorage:", error);
+      console.error('Failed to get token from localStorage:', error);
       return null;
     }
   });
@@ -40,12 +40,14 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     if (user) {
       localStorage.setItem('user', JSON.stringify(user));
+      console.log('User saved to localStorage:', user);
     } else {
       localStorage.removeItem('user');
     }
 
     if (token) {
       localStorage.setItem('token', token);
+      console.log('Token saved to localStorage:', token);
     } else {
       localStorage.removeItem('token');
     }
@@ -68,19 +70,17 @@ export const AuthProvider = ({ children }) => {
       if (response.status === 200 || response.status === 201) {
         const { token, user } = response.data;
         setToken(token);
-        setUser(user);
-        // localStorage updates are handled by the useEffect hook
+        setUser(user); // Ensure user object contains the role
+        console.log('Login successful - User:', user, 'Token:', token);
         setIsLoading(false);
         return true; // Indicate success
       } else {
-        // Handle unexpected successful status codes if necessary
         setError('An unexpected response was received.');
         setIsLoading(false);
         return false; // Indicate failure
       }
     } catch (err) {
       console.error('Login failed:', err);
-      // Handle specific error responses (e.g., 401 Unauthorized, 400 Bad Request)
       if (err.response && err.response.data && err.response.data.message) {
         setError(err.response.data.message); // Display backend error message
       } else {
@@ -111,8 +111,8 @@ export const AuthProvider = ({ children }) => {
       if (response.status === 200 || response.status === 201) {
         const { token, user } = response.data;
         setToken(token);
-        setUser(user);
-        // localStorage updates are handled by the useEffect hook
+        setUser(user); // Ensure user object contains the role
+        console.log('Registration successful - User:', user, 'Token:', token);
         setIsLoading(false);
         return true; // Indicate success
       } else {
@@ -122,7 +122,6 @@ export const AuthProvider = ({ children }) => {
       }
     } catch (err) {
       console.error('Registration failed:', err);
-      // Handle specific error responses (e.g., 409 Conflict for existing user, 400 Bad Request)
       if (err.response && err.response.data && err.response.data.message) {
         setError(err.response.data.message); // Display backend error message
       } else {
@@ -142,8 +141,6 @@ export const AuthProvider = ({ children }) => {
   const logout = () => {
     setUser(null);
     setToken(null);
-    // localStorage updates are handled by the useEffect hook
-    // No API call needed for simple client-side token removal
     console.log('User logged out.');
   };
 
@@ -173,11 +170,9 @@ export const AuthProvider = ({ children }) => {
  */
 export const useAuth = () => {
   const context = useContext(AuthContext);
-  console.log('useAuth context:', context);
   if (context === undefined) {
     throw new Error('useAuth must be used within an AuthProvider');
   }
-  console.log('useAuth context:', context);
   return context;
 };
 

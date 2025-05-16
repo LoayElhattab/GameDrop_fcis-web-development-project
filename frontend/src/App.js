@@ -4,7 +4,6 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { ThemeProvider, createTheme, CssBaseline, Typography } from '@mui/material'; // Make sure createTheme and CssBaseline are imported
 import ScrollToTop from './components/ScrollToTop'; // Make sure ScrollToTop is imported
-
 // --- Import your Providers ---
 import { AuthProvider } from './contexts/AuthContext'; // Import AuthProvider
 import { CartProvider } from './contexts/CartContext'; // <<< Import CartProvider <<<
@@ -36,8 +35,7 @@ import AdminProductsPage from './pages/admin/AdminProductsPage'; // Import actua
 import AdminProductFormPage from './pages/admin/AdminProductFormPage'; // Import actual Admin Product Form Page
 import AdminOrdersPage from './pages/admin/AdminOrdersPage'; // Import actual Admin Orders Page
 import AdminUsersPage from './pages/admin/AdminUsersPage'; // Import actual Admin Users Page
-
-
+import MyAccount from './pages/UserProfilePage';
 // --- Remove all Placeholder Page Component Definitions from here ---
 // const HomePageWrapper = () => <HomePage />; // REMOVE
 // const ProductDetailPageWrapper = () => <ProductDetailPage />; // REMOVE
@@ -168,8 +166,10 @@ const App = () => {
               <Route path="/" element={<MainLayout />}>
                 {/* Use the imported page components */}
                 <Route index element={<HomePage />} /> {/* Render HomePage component */}
+                
                 <Route path="products/:productId" element={<ProductDetailPage />} /> {/* Render ProductDetailPage */}
                 <Route path="login" element={<LoginPage />} /> {/* Render LoginPage */}
+                <Route path="profile" element={<MyAccount />} /> {/* Render MyAccount */}
                 <Route path="register" element={<RegisterPage />} /> {/* Render RegisterPage */}
                 <Route path="/search-results" element={<FilteredProductsSearch />} /> {/* Or choose a different path like "/filtered-products" */}
                 {/* Protected User Routes - Require authentication */}
@@ -201,8 +201,9 @@ const App = () => {
                   <Route path="products/edit/:productId" element={<AdminProductFormPage />} /> {/* Render AdminProductFormPage */}
                   <Route path="orders" element={<AdminOrdersPage />} /> {/* Render AdminOrdersPage */}
                   <Route path="users" element={<AdminUsersPage />} /> {/* Render AdminUsersPage */}
+                  {/* <Route path="admin/dashboard" element={<AdminLayout />} /> Render AdminUsersPage */}
                   {/* Fallback route for admin pages not found within AdminLayout */}
-                  <Route path="*" element={<Typography variant="h4" sx={{ textAlign: 'center', mt: 4 }}>Admin Page Not Found</Typography>} />
+                  {/* <Route path="*" element={<Typography variant="h4" sx={{ textAlign: 'center', mt: 4 }}>Admin Page Not Found</Typography>} /> */}
                 </Route>
               </Route>
 

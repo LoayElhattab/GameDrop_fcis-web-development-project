@@ -1,5 +1,3 @@
-// gamedrop-frontend/src/pages/LoginPage.jsx
-
 import React from 'react';
 import { Container, Box, Typography, TextField, Button, Link as MuiLink, Alert, CircularProgress } from '@mui/material';
 import { Link as RouterLink, useNavigate } from 'react-router-dom'; // Import useNavigate for redirection
@@ -26,14 +24,18 @@ const validationSchema = yup.object({
  */
 const LoginPage = () => {
   const navigate = useNavigate(); // Hook for navigation
-  const { login, isLoading, error, isAuthenticated } = useAuth(); // Get login function, state from auth context
+  const { login, isLoading, error, isAuthenticated, isAdmin } = useAuth(); // Added isAdmin to check role
 
-  // Redirect if already authenticated
+  // Redirect based on authentication and admin status
   useEffect(() => {
     if (isAuthenticated) {
-      navigate('/', { replace: true }); // Redirect to homepage
+      if (isAdmin) {
+        navigate('../', { replace: true }); // Redirect to admin dashboard if admin
+      } else {
+        navigate('/', { replace: true }); // Redirect to homepage if regular user
+      }
     }
-  }, [isAuthenticated, navigate]);
+  }, [isAuthenticated, isAdmin, navigate]);
 
   // Formik hook for form management
   const formik = useFormik({
@@ -45,7 +47,10 @@ const LoginPage = () => {
     onSubmit: async (values) => {
       // Call the login function from AuthContext
       const success = await login(values.email, values.password);
-      // Redirection handled by the useEffect hook above if success updates isAuthenticated
+      if (success && isAdmin) {
+        navigate('/admin/dashboard', { replace: true }); // Immediate redirect if admin (redundant with useEffect, but ensures flow)
+      }
+      // Redirection is primarily handled by useEffect based on isAuthenticated and isAdmin
     },
   });
 
@@ -89,9 +94,9 @@ const LoginPage = () => {
   };
 
   // Don't render the form if already authenticated (useEffect will redirect)
-   if (isAuthenticated) {
-       return null; // Or a loading spinner if redirection isn't instant
-   }
+  if (isAuthenticated) {
+    return null; // Or a loading spinner if redirection isn't instant
+  }
 
   return (
     <Container component="main" maxWidth="xs" sx={pageStyles}>
@@ -99,9 +104,9 @@ const LoginPage = () => {
         <Typography component="h1" variant="h5" gutterBottom>
           Welcome back
         </Typography>
-         <Typography variant="body2" sx={{ mb: 3, color: (theme) => theme.palette.text.secondary }}>
-            Enter your email and password to sign in to your account
-         </Typography>
+        <Typography variant="body2" sx={{ mb: 3, color: (theme) => theme.palette.text.secondary }}>
+          Enter your email and password to sign in to your account
+        </Typography>
         <Box component="form" onSubmit={formik.handleSubmit} noValidate sx={{ mt: 1 }}>
           <TextField
             margin="normal"
@@ -136,10 +141,9 @@ const LoginPage = () => {
             sx={inputStyles}
           />
           {/* Optional: Forgot password link */}
-           {/* <MuiLink component={RouterLink} to="#" variant="body2" sx={{ display: 'block', textAlign: 'right' }}> */}
-           {/* Forgot password? */}
-           {/* </MuiLink> */}
-
+          {/* <MuiLink component={RouterLink} to="#" variant="body2" sx={{ display: 'block', textAlign: 'right' }}>
+            Forgot password?
+          </MuiLink> */}
 
           {/* Display loading spinner if loading */}
           {isLoading && (

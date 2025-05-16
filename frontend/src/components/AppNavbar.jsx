@@ -115,7 +115,7 @@ const AppNavbar = () => {
             </Button>
           )}
           {isAdmin && ( // Only show admin link if admin
-            <Button component={RouterLink} to="/admin/dashboard" sx={navLinkStyles}>
+            <Button  component={RouterLink} to="/admin" sx={navLinkStyles}>
               Admin
             </Button>
           )}
@@ -136,7 +136,7 @@ const AppNavbar = () => {
             <>
               {/* User Profile Link (conditional) */}
               {user && ( // Display username or "Account"
-                <Button component={RouterLink} to="/account/profile" sx={authButtonStyles}>
+                <Button component={RouterLink} to="/profile" sx={authButtonStyles}>
                   {user.username || 'Account'} {/* Display username if available */}
                 </Button>
               )}

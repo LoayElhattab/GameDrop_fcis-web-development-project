@@ -8,7 +8,7 @@ const prisma = require('../config/db'); // Import Prisma Client
  */
 const getAllUsers = async (req, res, next) => {
     try {
-        // Prisma query to find all users, explicitly selecting fields to exclude password hash
+        // Prisma query to find all users, explicitly selecting fields to exØ´clude password hash
         const users = await prisma.user.findMany({
             select: {
                 id: true,
@@ -210,6 +210,47 @@ const deleteUser = async (req, res, next) => {
         next(error); // Pass other errors to the general error handler
     }
 };
+const getDashboardMetrics = async (req, res, next) => {
+    try {
+        // Run Prisma queries concurrently for performance
+        const [revenueData, productCount, activeUserCount, orderCount] = await Promise.all([
+            // Calculate total revenue from completed orders
+            prisma.order.aggregate({
+                _sum: {
+                    total_amount: true,
+                },
+                where: {
+                    status: 'COMPLETED', // Assuming 'COMPLETED' status for finalized orders
+                },
+            }),
+            // Count total products
+            prisma.product.count(),
+            // Count active users (e.g., users who have placed at least one order)
+            prisma.user.count({
+                where: {
+                    orders: {
+                        some: {}, // Users with at least one order
+                    },
+                },
+            }),
+            // Count total orders
+            prisma.order.count(),
+        ]);
+
+        // Structure the response
+        const metrics = {
+            totalRevenue: revenueData._sum.total_amount || 0, // Handle null case
+            totalProducts: productCount,
+            activeUsers: activeUserCount,
+            totalOrders: orderCount,
+        };
+
+        res.status(200).json(metrics);
+
+    } catch (error) {
+        next(error);
+    }
+};
 
 // Export all admin controller functions
 module.exports = {
@@ -217,4 +258,6 @@ module.exports = {
     getUserById,
     updateUserRole,
     deleteUser,
+    getDashboardMetrics,
+
 };

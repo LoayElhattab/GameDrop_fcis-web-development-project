@@ -29,7 +29,7 @@ function HomePage() {
                 // Fetch featured games (example: filter by a 'featured' flag or sort)
                 const featuredResponse = await apiClient.get('/products/getProducts', {
                     params: {
-                        isFeatured: true, limit: 4
+                        isFeatured: true, limit: 6
 
                     },
                     withCredentials: true // Example filter/limit

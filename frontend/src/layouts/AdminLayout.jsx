@@ -14,7 +14,9 @@ const AdminLayout = () => {
   return (
     <Box sx={{ p: 3 }}> {/* Add some padding around admin content */}
       {/* A simple indicator this is the admin area */}
-      <Typography variant="h4" gutterBottom component="h1">Admin Dashboard</Typography>
+      <Typography variant="h4" gutterBottom component="h1">
+      </Typography>
+      
       <Outlet /> {/* Renders the matched route's component */}
     </Box>
   );
