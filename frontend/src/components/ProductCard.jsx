@@ -16,8 +16,9 @@ import { useCart } from '../contexts/CartContext';
  * @param {number} product.price - The price of the product.
  * @param {string} product.cover_image_url - The URL of the product's cover image.
  * @param {number} product.stock_quantity - The number of items in stock.
+ * @param {boolean} isAdmin - Indicates if the current user is an admin.
  */
-function ProductCard({ product }) {
+function ProductCard({ product, isAdmin }) {
     const { addItem } = useCart();
 
     const handleAddToCart = () => {
@@ -26,12 +27,13 @@ function ProductCard({ product }) {
     };
 
     const isOutOfStock = product.stock_quantity <= 0;
+    const isAddToCartDisabled = isOutOfStock || isAdmin;
 
     return (
         <Card
             sx={{
-                minHeight: 400, // Fixed minimum height for consistency
-                width: '100%', // Ensure card takes full width of Grid item
+                minHeight: 400,
+                width: '100%',
                 display: 'flex',
                 flexDirection: 'column',
                 backgroundColor: '#1e1e1e',
@@ -68,7 +70,7 @@ function ProductCard({ product }) {
                         lineHeight: 1.3,
                         overflow: 'hidden',
                         textOverflow: 'ellipsis',
-                        whiteSpace: 'nowrap', // Prevent title from wrapping
+                        whiteSpace: 'nowrap',
                     }}
                 >
                     {product.title}
@@ -81,7 +83,7 @@ function ProductCard({ product }) {
                         mb: 1,
                         overflow: 'hidden',
                         textOverflow: 'ellipsis',
-                        whiteSpace: 'nowrap', // Prevent platform/genre from wrapping
+                        whiteSpace: 'nowrap',
                     }}
                 >
                     {product.platform} | {product.genre}
@@ -119,7 +121,7 @@ function ProductCard({ product }) {
                     color="primary"
                     aria-label="add to shopping cart"
                     onClick={handleAddToCart}
-                    disabled={isOutOfStock}
+                    disabled={isAddToCartDisabled}
                     sx={{
                         backgroundColor: '#7e57c2',
                         color: '#ffffff',

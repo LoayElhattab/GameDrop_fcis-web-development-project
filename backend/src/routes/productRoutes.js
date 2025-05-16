@@ -14,6 +14,6 @@ router.get("/getProducts", getAllProducts);
 router.get("/:id", getProductById);
 router.post("/createProduct", protect, authorize("ADMIN"), createProduct);
 router.put("/:id", protect, authorize("ADMIN"), updateProduct);
-router.delete("/:id", protect, authorize("ADMIN"), deleteProduct);
+router.patch("/:id", protect, authorize("ADMIN"), deleteProduct);
 
 module.exports = router;

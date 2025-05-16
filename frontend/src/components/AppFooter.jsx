@@ -1,27 +1,29 @@
-// gamedrop-frontend/src/components/common/AppFooter.jsx
-
-import React from 'react';
-import { Box, Typography, Container, Grid, Link as MuiLink } from '@mui/material';
-import { Link as RouterLink } from 'react-router-dom'; // Use RouterLink for navigation
+import React, { useState } from 'react';
+import { Box, Typography, Container, Grid, Link as MuiLink, Dialog, DialogTitle, DialogContent, DialogContentText } from '@mui/material';
+import { Link as RouterLink } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 
 /**
  * Application footer component.
  * Styles based on v0.dev prototype footer.
  */
 const AppFooter = () => {
-  // Basic styling to match the prototype's dark background and layout
+  const { user, isAdmin } = useAuth();
+  const [openTerms, setOpenTerms] = useState(false);
+  const [openPrivacy, setOpenPrivacy] = useState(false);
+
   const footerStyles = {
-    backgroundColor: '#1a202c', // Dark background color, same as navbar
-    color: '#ffffff', // White text color
-    py: 6, // Padding top and bottom
-    mt: 'auto', // Push footer to the bottom if content is short
+    backgroundColor: '#1a202c',
+    color: '#ffffff',
+    py: 6,
+    mt: 'auto',
   };
 
   const linkStyles = {
-    color: 'inherit', // Inherit text color
+    color: 'inherit',
     textDecoration: 'none',
     '&:hover': {
-       textDecoration: 'underline',
+      textDecoration: 'underline',
     },
   };
 
@@ -34,62 +36,111 @@ const AppFooter = () => {
             <Typography variant="h6" gutterBottom>
               GAMEDROP
             </Typography>
-            <Typography variant="body2" sx={{ color: '#a0aec0' }}> {/* Lighter grey text */}
+            <Typography variant="body2" sx={{ color: '#a0aec0' }}>
               Your one-stop shop for all your gaming needs.
               Buy the latest games for PlayStation, Xbox, Nintendo, and PC.
             </Typography>
           </Grid>
 
-          {/* Shop Links Section */}
-          <Grid item xs={6} sm={2}>
-            <Typography variant="h6" gutterBottom>
-              Shop
-            </Typography>
-            <Box component="ul" sx={{ listStyle: 'none', p: 0, m: 0 }}>
-              <li><MuiLink component={RouterLink} to="/" sx={linkStyles}>Home</MuiLink></li> {/* Assuming Home is the shop */}
-              {/* Add links for platforms/genres if needed later */}
-              {/* <li><MuiLink component={RouterLink} to="/category/playstation" sx={linkStyles}>PlayStation</MuiLink></li> */}
-            </Box>
-          </Grid>
-
           {/* Account Links Section */}
           <Grid item xs={6} sm={2}>
-             <Typography variant="h6" gutterBottom>
-               Account
-             </Typography>
-             <Box component="ul" sx={{ listStyle: 'none', p: 0, m: 0 }}>
-                <li><MuiLink component={RouterLink} to="/account/profile" sx={linkStyles}>My Account</MuiLink></li>
-                <li><MuiLink component={RouterLink} to="/account/orders" sx={linkStyles}>Order History</MuiLink></li>
-                <li><MuiLink component={RouterLink} to="/cart" sx={linkStyles}>Cart</MuiLink></li>
-                {/* Add Wishlist if implemented later */}
-                {/* <li><MuiLink component={RouterLink} to="/account/wishlist" sx={linkStyles}>Wishlist</MuiLink></li> */}
-             </Box>
+            <Typography variant="h6" gutterBottom>
+              Account
+            </Typography>
+            <Box component="ul" sx={{ listStyle: 'none', p: 0, m: 0 }}>
+              {user && (
+                <>
+                  <li>
+                    <MuiLink component={RouterLink} to="/profile" sx={linkStyles}>
+                      My Account
+                    </MuiLink>
+                  </li>
+                  {!isAdmin && (
+                    <li>
+                      <MuiLink component={RouterLink} to="/cart" sx={linkStyles}>
+                        Cart
+                      </MuiLink>
+                    </li>
+                  )}
+                  {isAdmin && (
+                    <li>
+                      <MuiLink component={RouterLink} to="/admin" sx={linkStyles}>
+                        Admin
+                      </MuiLink>
+                    </li>
+                  )}
+                </>
+              )}
+            </Box>
           </Grid>
 
           {/* Company Links Section */}
           <Grid item xs={6} sm={2}>
-             <Typography variant="h6" gutterBottom>
-               Company
-             </Typography>
-             <Box component="ul" sx={{ listStyle: 'none', p: 0, m: 0 }}>
-                 {/* Placeholder links */}
-                <li><MuiLink href="#" sx={linkStyles}>About Us</MuiLink></li>
-                <li><MuiLink href="#" sx={linkStyles}>Contact</MuiLink></li>
-                <li><MuiLink href="#" sx={linkStyles}>Privacy Policy</MuiLink></li>
-                <li><MuiLink href="#" sx={linkStyles}>Terms of Service</MuiLink></li>
-             </Box>
+            <Typography variant="h6" gutterBottom>
+              Company
+            </Typography>
+            <Box component="ul" sx={{ listStyle: 'none', p: 0, m: 0 }}>
+              <li>
+                <MuiLink
+                  href="#"
+                  onClick={(e) => { e.preventDefault(); setOpenTerms(true); }}
+                  sx={linkStyles}
+                >
+                  Terms of Service
+                </MuiLink>
+              </li>
+              <li>
+                <MuiLink
+                  href="#"
+                  onClick={(e) => { e.preventDefault(); setOpenPrivacy(true); }}
+                  sx={linkStyles}
+                >
+                  Privacy Policy
+                </MuiLink>
+              </li>
+            </Box>
           </Grid>
-
         </Grid>
 
         {/* Copyright */}
-        <Box sx={{ mt: 6, textAlign: 'center', color: '#a0aec0' }}> {/* Lighter grey text */}
+        <Box sx={{ mt: 6, textAlign: 'center', color: '#a0aec0' }}>
           <Typography variant="body2">
             © {new Date().getFullYear()} GameDrop. All rights reserved.
           </Typography>
-          {/* Add social media icons if needed, styled appropriately */}
         </Box>
       </Container>
+
+      {/* Terms of Service Dialog */}
+      <Dialog open={openTerms} onClose={() => setOpenTerms(false)}>
+        <DialogTitle>Terms of Service</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Welcome to GameDrop! By using our services, you agree to the following terms:
+            <ul>
+              <li>Users must provide accurate registration information.</li>
+              <li>Accounts are for personal use only.</li>
+              <li>GameDrop reserves the right to suspend accounts for violations.</li>
+            </ul>
+            Last updated: May 16, 2025.
+          </DialogContentText>
+        </DialogContent>
+      </Dialog>
+
+      {/* Privacy Policy Dialog */}
+      <Dialog open={openPrivacy} onClose={() => setOpenPrivacy(false)}>
+        <DialogTitle>Privacy Policy</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            At GameDrop, we value your privacy. This policy outlines how we handle your data:
+            <ul>
+              <li>We collect email and username for account management.</li>
+              <li>Your data is not shared with third parties.</li>
+              <li>You can request data deletion at any time.</li>
+            </ul>
+            Last updated: May 16, 2025.
+          </DialogContentText>
+        </DialogContent>
+      </Dialog>
     </Box>
   );
 };

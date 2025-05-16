@@ -1,10 +1,9 @@
-import React from 'react';
-import { Container, Box, Typography, TextField, Button, Link as MuiLink, Alert, CircularProgress } from '@mui/material';
-import { Link as RouterLink, useNavigate } from 'react-router-dom'; // Import useNavigate for redirection
+import React, { useState } from 'react';
+import { Container, Box, Typography, TextField, Button, Link as MuiLink, Alert, CircularProgress, Snackbar } from '@mui/material';
+import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import { useFormik } from 'formik';
-import * as yup from 'yup'; // For validation
-import { useAuth } from '../contexts/AuthContext'; // Import useAuth hook
-import { useEffect } from 'react';
+import * as yup from 'yup';
+import { useAuth } from '../contexts/AuthContext';
 
 // Define validation schema using yup
 const validationSchema = yup.object({
@@ -23,19 +22,9 @@ const validationSchema = yup.object({
  * Styles based on v0.dev prototype login page.
  */
 const LoginPage = () => {
-  const navigate = useNavigate(); // Hook for navigation
-  const { login, isLoading, error, isAuthenticated, isAdmin } = useAuth(); // Added isAdmin to check role
-
-  // Redirect based on authentication and admin status
-  useEffect(() => {
-    if (isAuthenticated) {
-      if (isAdmin) {
-        navigate('../', { replace: true }); // Redirect to admin dashboard if admin
-      } else {
-        navigate('/', { replace: true }); // Redirect to homepage if regular user
-      }
-    }
-  }, [isAuthenticated, isAdmin, navigate]);
+  const navigate = useNavigate();
+  const { login, isLoading, error, isAuthenticated, isAdmin } = useAuth();
+  const [openSuccess, setOpenSuccess] = useState(false);
 
   // Formik hook for form management
   const formik = useFormik({
@@ -45,58 +34,56 @@ const LoginPage = () => {
     },
     validationSchema: validationSchema,
     onSubmit: async (values) => {
-      // Call the login function from AuthContext
       const success = await login(values.email, values.password);
-      if (success && isAdmin) {
-        navigate('/admin/dashboard', { replace: true }); // Immediate redirect if admin (redundant with useEffect, but ensures flow)
+      if (success) {
+        setOpenSuccess(true);
+        setTimeout(() => {
+          setOpenSuccess(false);
+          if (isAdmin) {
+            navigate('../', { replace: true });
+          } else {
+            navigate('/', { replace: true });
+          }
+        }, 3000);
       }
-      // Redirection is primarily handled by useEffect based on isAuthenticated and isAdmin
     },
   });
 
-  // Basic styling to match the prototype (dark background, centered form)
   const pageStyles = {
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
-    minHeight: 'calc(100vh - 64px - 100px)', // Adjust based on navbar/footer height if needed
-    // Background color is handled by the global theme and CssBaseline
+    minHeight: 'calc(100vh - 64px - 100px)',
   };
 
   const formContainerStyles = {
     padding: 4,
     borderRadius: 2,
     textAlign: 'center',
-    // Use theme paper color for the form box background
     backgroundColor: (theme) => theme.palette.background.paper,
-    boxShadow: '0px 0px 20px rgba(0, 0, 0, 0.5)', // Subtle shadow like prototype
-    maxWidth: '400px', // Max width for the form container
-    width: '100%', // Take full width up to max
+    boxShadow: '0px 0px 20px rgba(0, 0, 0, 0.5)',
+    maxWidth: '400px',
+    width: '100%',
   };
 
   const inputStyles = {
-    mb: 2, // Margin bottom between fields
+    mb: 2,
   };
 
   const submitButtonStyles = {
-    mt: 2, // Margin top for the button
-    py: 1.5, // Vertical padding
+    mt: 2,
+    py: 1.5,
   };
 
   const linkStyles = {
     mt: 2,
-    display: 'block', // Make link a block element for margin
-    color: (theme) => theme.palette.primary.main, // Use theme's primary color
+    display: 'block',
+    color: (theme) => theme.palette.primary.main,
     textDecoration: 'none',
     '&:hover': {
       textDecoration: 'underline',
     },
   };
-
-  // Don't render the form if already authenticated (useEffect will redirect)
-  if (isAuthenticated) {
-    return null; // Or a loading spinner if redirection isn't instant
-  }
 
   return (
     <Container component="main" maxWidth="xs" sx={pageStyles}>
@@ -140,19 +127,13 @@ const LoginPage = () => {
             helperText={formik.touched.password && formik.errors.password}
             sx={inputStyles}
           />
-          {/* Optional: Forgot password link */}
-          {/* <MuiLink component={RouterLink} to="#" variant="body2" sx={{ display: 'block', textAlign: 'right' }}>
-            Forgot password?
-          </MuiLink> */}
 
-          {/* Display loading spinner if loading */}
           {isLoading && (
             <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
               <CircularProgress size={24} />
             </Box>
           )}
 
-          {/* Display error message if error exists */}
           {error && (
             <Alert severity="error" sx={{ mt: 2 }}>
               {error}
@@ -165,17 +146,30 @@ const LoginPage = () => {
             variant="contained"
             color="primary"
             sx={submitButtonStyles}
-            disabled={isLoading} // Disable button while loading
+            disabled={isLoading}
           >
             Sign In
           </Button>
 
-          {/* Link to Register Page */}
           <MuiLink component={RouterLink} to="/register" variant="body2" sx={linkStyles}>
             {"Don't have an account? Sign Up"}
           </MuiLink>
         </Box>
       </Box>
+
+      <Snackbar
+        open={openSuccess}
+        autoHideDuration={3000}
+        onClose={() => setOpenSuccess(false)}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert severity="success" sx={{ backgroundColor: '#1a202c', color: '#ffffff' }}>
+          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+            <Box sx={{ mr: 1 }}>✓</Box>
+            <Typography>Logged successfully.</Typography>
+          </Box>
+        </Alert>
+      </Snackbar>
     </Container>
   );
 };

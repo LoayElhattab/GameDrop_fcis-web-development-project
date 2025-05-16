@@ -1,5 +1,5 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
-import apiClient from '../api'; // Import the configured axios instance
+import apiClient from '../api';
 
 // Create the Auth Context
 const AuthContext = createContext(null);
@@ -9,7 +9,6 @@ const AuthContext = createContext(null);
  * Manages user data, token, and loading state.
  */
 export const AuthProvider = ({ children }) => {
-  // Initialize state from localStorage on component mount
   const [user, setUser] = useState(() => {
     try {
       const storedUser = localStorage.getItem('user');
@@ -34,9 +33,8 @@ export const AuthProvider = ({ children }) => {
   });
 
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState(null); // State to hold authentication errors
+  const [error, setError] = useState(null);
 
-  // Effect to update localStorage whenever user or token changes
   useEffect(() => {
     if (user) {
       localStorage.setItem('user', JSON.stringify(user));
@@ -53,108 +51,79 @@ export const AuthProvider = ({ children }) => {
     }
   }, [user, token]);
 
-  /**
-   * Handles user login.
-   * @param {string} email - User's email.
-   * @param {string} password - User's password.
-   * @returns {Promise<boolean>} - True if login is successful, false otherwise.
-   */
   const login = async (email, password) => {
     setIsLoading(true);
-    setError(null); // Clear previous errors
+    setError(null);
     try {
-      // Call the backend login endpoint
       const response = await apiClient.post('/auth/login', { email, password });
-
-      // Assuming backend returns { token: '...', user: {...} } on success (status 200/201)
       if (response.status === 200 || response.status === 201) {
         const { token, user } = response.data;
         setToken(token);
-        setUser(user); // Ensure user object contains the role
+        setUser(user);
         console.log('Login successful - User:', user, 'Token:', token);
         setIsLoading(false);
-        return true; // Indicate success
+        return true;
       } else {
         setError('An unexpected response was received.');
         setIsLoading(false);
-        return false; // Indicate failure
+        return false;
       }
     } catch (err) {
       console.error('Login failed:', err);
       if (err.response && err.response.data && err.response.data.message) {
-        setError(err.response.data.message); // Display backend error message
+        setError(err.response.data.message);
       } else {
         setError('Login failed. Please check your credentials and try again.');
       }
       setUser(null);
       setToken(null);
       setIsLoading(false);
-      return false; // Indicate failure
+      return false;
     }
   };
 
-  /**
-   * Handles user registration.
-   * @param {string} username - Desired username.
-   * @param {string} email - User's email.
-   * @param {string} password - Desired password.
-   * @returns {Promise<boolean>} - True if registration is successful, false otherwise.
-   */
   const register = async (username, email, password) => {
     setIsLoading(true);
-    setError(null); // Clear previous errors
+    setError(null);
     try {
-      // Call the backend register endpoint
       const response = await apiClient.post('/auth/register', { username, email, password });
-
-      // Assuming backend returns { token: '...', user: {...} } on success (status 200/201)
       if (response.status === 200 || response.status === 201) {
-        const { token, user } = response.data;
-        setToken(token);
-        setUser(user); // Ensure user object contains the role
-        console.log('Registration successful - User:', user, 'Token:', token);
+        console.log('Registration successful - Response:', response.data);
         setIsLoading(false);
-        return true; // Indicate success
+        return true; // Indicate success without setting token or user
       } else {
         setError('Registration failed. An unexpected response was received.');
         setIsLoading(false);
-        return false; // Indicate failure
+        return false;
       }
     } catch (err) {
       console.error('Registration failed:', err);
       if (err.response && err.response.data && err.response.data.message) {
-        setError(err.response.data.message); // Display backend error message
+        setError(err.response.data.message);
       } else {
         setError('Registration failed. Please try again.');
       }
-      setUser(null);
-      setToken(null);
       setIsLoading(false);
-      return false; // Indicate failure
+      return false;
     }
   };
 
-  /**
-   * Handles user logout.
-   * Clears state and localStorage.
-   */
   const logout = () => {
     setUser(null);
     setToken(null);
     console.log('User logged out.');
   };
 
-  // The context value includes state and functions
   const contextValue = {
     user,
     token,
     isLoading,
-    error, // Provide error state to components
+    error,
     login,
     register,
     logout,
-    isAuthenticated: !!token, // Helper derived state
-    isAdmin: user?.role === 'ADMIN', // Helper derived state for admin check
+    isAuthenticated: !!token,
+    isAdmin: user?.role === 'ADMIN',
   };
 
   return (
@@ -164,10 +133,6 @@ export const AuthProvider = ({ children }) => {
   );
 };
 
-/**
- * Custom hook to easily access the authentication context.
- * @returns {object} - The authentication context value.
- */
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (context === undefined) {
@@ -176,5 +141,4 @@ export const useAuth = () => {
   return context;
 };
 
-// Export the context itself (less common to use directly, use useAuth hook)
 export default AuthContext;

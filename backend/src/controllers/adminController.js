@@ -212,8 +212,24 @@ const deleteUser = async (req, res, next) => {
 };
 const getDashboardMetrics = async (req, res, next) => {
     try {
+        // Fetch raw data for debugging
+        const allProducts = await prisma.product.findMany({
+            where: {
+                stock_quantity: { gt: 0 },
+                is_deleted: false,
+            },
+        });
+
+        const allUsers = await prisma.user.findMany();
+
+        const allOrders = await prisma.order.findMany({
+            where: {
+                status: 'COMPLETED',
+            },
+        });
+
         // Run Prisma queries concurrently for performance
-        const [revenueData, productCount, activeUserCount, orderCount] = await Promise.all([
+        const [revenueData, productCount, userCount, orderCount] = await Promise.all([
             // Calculate total revenue from completed orders
             prisma.order.aggregate({
                 _sum: {
@@ -223,31 +239,39 @@ const getDashboardMetrics = async (req, res, next) => {
                     status: 'COMPLETED', // Assuming 'COMPLETED' status for finalized orders
                 },
             }),
-            // Count total products
-            prisma.product.count(),
-            // Count active users (e.g., users who have placed at least one order)
-            prisma.user.count({
+            // Count products where stock_quantity > 0 and not deleted
+            prisma.product.count({
                 where: {
-                    orders: {
-                        some: {}, // Users with at least one order
-                    },
+                    stock_quantity: { gt: 0 },
+                    is_deleted: false,
                 },
             }),
+            // Count all users
+            prisma.user.count(),
             // Count total orders
             prisma.order.count(),
         ]);
+
+        console.log('All Products (stock_quantity > 0, is_deleted: false):', allProducts);
+        console.log('All Users:', allUsers);
+        console.log('All Completed Orders:', allOrders);
+        console.log('Revenue Data:', revenueData);
+        console.log('Product Count:', productCount);
+        console.log('User Count:', userCount);
+        console.log('Order Count:', orderCount);
 
         // Structure the response
         const metrics = {
             totalRevenue: revenueData._sum.total_amount || 0, // Handle null case
             totalProducts: productCount,
-            activeUsers: activeUserCount,
+            activeUsers: userCount,
             totalOrders: orderCount,
         };
 
         res.status(200).json(metrics);
 
     } catch (error) {
+        console.error('Error fetching dashboard metrics:', error);
         next(error);
     }
 };

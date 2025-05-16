@@ -33,6 +33,7 @@ const AdminProductsPage = () => {
     const [productToDelete, setProductToDelete] = useState(null);
     const [formDialogOpen, setFormDialogOpen] = useState(false);
     const [productToEditId, setProductToEditId] = useState(null);
+    const [deleteQuantity, setDeleteQuantity] = useState(0);
 
     const fetchProducts = async () => {
         setLoading(true);
@@ -52,8 +53,11 @@ const AdminProductsPage = () => {
                     search: searchTerm,
                 }
             });
-            console.log('Response:', JSON.stringify(response.data)); // Debug: Log the response data
-            setProducts(response.data.products);
+
+            // Filter out products with stock_quantity of 0
+            const filteredProducts = response.data.products.filter(product => product.stock_quantity > 0);
+
+            setProducts(filteredProducts);
             setTotalProducts(response.data.total);
         } catch (err) {
             console.error('Failed to fetch products:', err);
@@ -108,14 +112,29 @@ const AdminProductsPage = () => {
         setError(null);
 
         try {
-            await apiClient.delete(`./products/${productToDelete.id}`);
-            setProducts(products.filter(p => p.id !== productToDelete.id));
-            setTotalProducts(totalProducts - 1);
+            const payload = {};
+            if (deleteQuantity >= productToDelete.stock_quantity) {
+                payload.is_deleted = true;
+                await apiClient.patch(`./products/${productToDelete.id}`, payload);
+                setProducts(products.filter(p => p.id !== productToDelete.id));
+                setTotalProducts(totalProducts - 1);
+            } else if (deleteQuantity > 0) {
+                payload.stock_quantity = deleteQuantity;
+                await apiClient.patch(`./products/${productToDelete.id}`, payload);
+                setProducts(products.map(p => 
+                    p.id === productToDelete.id ? { ...p, stock_quantity: p.stock_quantity - deleteQuantity } : p
+                ).filter(p => p.stock_quantity > 0)); // Filter out if stock becomes 0 after update
+            } else {
+                setError('Please enter a valid quantity (greater than zero).');
+                setLoading(false);
+                return;
+            }
             setDeleteDialogOpen(false);
             setProductToDelete(null);
+            setDeleteQuantity(0);
         } catch (err) {
-            console.error('Failed to delete product:', err);
-            setError('Failed to delete product. Please try again.');
+            console.error('Error in deletion:', err.response ? err.response.data : err);
+            setError(err.response?.data?.error || 'Failed to update product, this may be due to a foreign key constraint or invalid quantity.');
         } finally {
             setLoading(false);
         }
@@ -123,12 +142,14 @@ const AdminProductsPage = () => {
 
     const openDeleteDialog = (product) => {
         setProductToDelete(product);
+        setDeleteQuantity(0);
         setDeleteDialogOpen(true);
     };
 
     const closeDeleteDialog = () => {
         setDeleteDialogOpen(false);
         setProductToDelete(null);
+        setDeleteQuantity(0);
     };
 
     const paperStyles = {
@@ -148,7 +169,7 @@ const AdminProductsPage = () => {
 
     const tableCellStyles = {};
 
-    const getStatusColor = () => {}; // Placeholder, not used here but kept for consistency
+    const getStatusColor = () => {};
 
     return (
         <Box sx={{ mt: 4, mb: 4 }}>
@@ -197,7 +218,7 @@ const AdminProductsPage = () => {
                         <Table>
                             <TableHead>
                                 <TableRow>
-                                    <TableCell sx={tableHeaderCellStyles}>Image</TableCell> {/* Added Image column */}
+                                    <TableCell sx={tableHeaderCellStyles}>Image</TableCell>
                                     <TableCell sx={tableHeaderCellStyles}>ID</TableCell>
                                     <TableCell sx={tableHeaderCellStyles}>Title</TableCell>
                                     <TableCell sx={tableHeaderCellStyles}>Platform</TableCell>
@@ -221,7 +242,7 @@ const AdminProductsPage = () => {
                                             ) : (
                                                 'N/A'
                                             )}
-                                        </TableCell> {/* Added Image cell */}
+                                        </TableCell>
                                         <TableCell sx={tableCellStyles}>{product.id?.substring(0, 6)}...</TableCell>
                                         <TableCell sx={tableCellStyles}>{product.title}</TableCell>
                                         <TableCell sx={tableCellStyles}>{product.platform}</TableCell>
@@ -290,9 +311,27 @@ const AdminProductsPage = () => {
                     Confirm Deletion
                 </DialogTitle>
                 <DialogContent>
-                    <Typography variant="body1" color="text.secondary">
-                        Are you sure you want to delete product: <strong>{productToDelete?.title}</strong>?
+                    <Typography variant="body1" color="text.secondary" sx={{ mb: 2 }}>
+                        Are you sure you want to delete items from product: <strong>{productToDelete?.title}</strong>?
                     </Typography>
+                    <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                        Current stock: {productToDelete?.stock_quantity}
+                    </Typography>
+                    <TextField
+                        label="Quantity to Delete"
+                        type="number"
+                        value={deleteQuantity}
+                        onChange={(e) => {
+                            const value = parseInt(e.target.value, 10) || 0;
+                            setDeleteQuantity(Math.min(value, productToDelete?.stock_quantity || 0));
+                        }}
+                        InputProps={{
+                            inputProps: { min: 0, max: productToDelete?.stock_quantity || 0 }
+                        }}
+                        fullWidth
+                        sx={{ mt: 2 }}
+                        helperText={`Enter a number between 0 and ${productToDelete?.stock_quantity}`}
+                    />
                 </DialogContent>
                 <DialogActions>
                     <Button onClick={closeDeleteDialog} color="secondary">

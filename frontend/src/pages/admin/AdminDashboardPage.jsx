@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Box, Typography, Grid, Paper, Card, CardContent, CardActionArea, CircularProgress, Alert } from '@mui/material';
-import { useNavigate } from 'react-router-dom'; // Import useNavigate for navigation
-import apiClient from '../../api'; // Assuming apiClient is correctly configured for backend calls
-import { useAuth } from '../../contexts/AuthContext'; // Assuming useAuth provides user info and token
+import { useNavigate } from 'react-router-dom';
+import apiClient from '../../api';
+import { useAuth } from '../../contexts/AuthContext';
 
 /**
  * Admin Dashboard Page Component.
@@ -13,18 +13,19 @@ const AdminDashboardPage = () => {
   const [summaryData, setSummaryData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const { user } = useAuth(); // Get user info
-  const navigate = useNavigate(); // Hook for navigation
+  const { user } = useAuth();
+  const navigate = useNavigate();
+
+  const [orders, setOrders] = useState([]);
 
   useEffect(() => {
     const fetchSummaryData = async () => {
       setLoading(true);
       setError(null);
       try {
-        // Fetch admin dashboard metrics from the backend
         const response = await apiClient.get('./admin/dashboard/metrics');
+        console.log('API Response from /admin/dashboard/metrics:', response.data);
         setSummaryData(response.data);
-        console.log('Fetched summary data:', response.data);
       } catch (err) {
         console.error('Failed to fetch admin summary data:', err);
         if (err.response && err.response.status === 403) {
@@ -37,16 +38,42 @@ const AdminDashboardPage = () => {
       }
     };
 
-    // Fetch data only if user is authenticated and an admin
+    const fetchOrders = async () => {
+      try {
+        const response = await apiClient.get('/orders/getOrders', {
+          params: {
+            page: 1,
+            limit: 1000,
+          }
+        });
+        const ordersData = Array.isArray(response.data.orders)
+          ? response.data.orders
+          : Array.isArray(response.data.results)
+          ? response.data.results
+          : Array.isArray(response.data)
+          ? response.data
+          : [];
+        console.log('Fetched orders:', ordersData);
+        setOrders(ordersData);
+      } catch (err) {
+        console.error('Failed to fetch orders for revenue:', err);
+      }
+    };
+
     if (user && user.role === 'ADMIN') {
       fetchSummaryData();
+      fetchOrders();
     } else {
       setError('Unauthorized access.');
       setLoading(false);
     }
   }, [user]);
 
-  // Basic styling for dark theme Paper and Cards
+  const totalRevenue = orders
+    .filter(order => order.status !== 'CANCELLED')
+    .reduce((sum, order) => sum + (parseFloat(order.total_amount) || 0), 0)
+    .toFixed(2);
+
   const paperStyles = {
     p: 3,
     backgroundColor: (theme) => theme.palette.background.paper,
@@ -61,28 +88,27 @@ const AdminDashboardPage = () => {
     boxShadow: 3,
     borderRadius: 2,
     height: '100%',
-    transition: 'transform 0.2s', // Add hover effect
+    transition: 'transform 0.2s',
     '&:hover': {
-      transform: 'scale(1.02)', // Slight scale on hover for button-like behavior
+      transform: 'scale(1.02)',
       boxShadow: 6,
     },
   };
 
-  // Navigation handlers for each card
   const handleRevenueClick = () => {
-    navigate('/admin/orders'); // Navigate to orders page (since revenue is tied to orders)
+    navigate('/admin/orders?filter=revenue');
   };
 
   const handleOrdersClick = () => {
-    navigate('/admin/orders'); // Navigate to orders page
+    navigate('/admin/orders?filter=all');
   };
 
   const handleProductsClick = () => {
-    navigate('/admin/products'); // Navigate to products page
+    navigate('/admin/products');
   };
 
   const handleUsersClick = () => {
-    navigate('/admin/users'); // Navigate to users page
+    navigate('/admin/users');
   };
 
   return (
@@ -101,7 +127,6 @@ const AdminDashboardPage = () => {
         </Alert>
       ) : (
         <Grid container spacing={4}>
-          {/* Summary Cards - Now Clickable */}
           <Grid item xs={12} sm={6} md={3}>
             <Card sx={cardStyles}>
               <CardActionArea onClick={handleRevenueClick}>
@@ -110,7 +135,7 @@ const AdminDashboardPage = () => {
                     Total Revenue
                   </Typography>
                   <Typography variant="h3">
-                    ${summaryData?.totalRevenue?.toFixed(2) || '0.00'}
+                    ${totalRevenue || '0.00'}
                   </Typography>
                 </CardContent>
               </CardActionArea>
@@ -157,28 +182,6 @@ const AdminDashboardPage = () => {
                 </CardContent>
               </CardActionArea>
             </Card>
-          </Grid>
-
-          {/* Placeholders for Charts or Recent Activity */}
-          <Grid item xs={12} md={8}>
-            <Paper sx={paperStyles}>
-              <Typography variant="h6" gutterBottom>
-                Sales Overview (Placeholder)
-              </Typography>
-              <Box sx={{ height: 300, display: 'flex', justifyContent: 'center', alignItems: 'center', color: 'text.secondary' }}>
-                <Typography>Chart Area</Typography>
-              </Box>
-            </Paper>
-          </Grid>
-          <Grid item xs={12} md={4}>
-            <Paper sx={paperStyles}>
-              <Typography variant="h6" gutterBottom>
-                Recent Activity (Placeholder)
-              </Typography>
-              <Box sx={{ height: 300, display: 'flex', justifyContent: 'center', alignItems: 'center', color: 'text.secondary' }}>
-                <Typography>Activity Feed Area</Typography>
-              </Box>
-            </Paper>
           </Grid>
         </Grid>
       )}

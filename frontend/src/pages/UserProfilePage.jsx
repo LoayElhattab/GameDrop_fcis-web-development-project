@@ -19,6 +19,11 @@ import {
 import { useNavigate } from 'react-router-dom';
 import apiClient from '../api/apiClient';
 
+/**
+ * My Account Page Component.
+ * Displays user profile and order history with a tabbed interface.
+ * Styled using Material UI to match a dark, modern aesthetic.
+ */
 const MyAccount = () => {
   const [activeTab, setActiveTab] = useState(0); // 0 for Profile, 1 for Order History
   const [profileData, setProfileData] = useState(null);
@@ -56,10 +61,6 @@ const MyAccount = () => {
     navigate(`/order/${orderId}`);
   };
 
-  const handleEditProfile = () => {
-    navigate('/edit-profile');
-  };
-
   const formatDate = (dateString) => {
     const date = new Date(dateString);
     return date.toLocaleString('en-US', {
@@ -72,6 +73,9 @@ const MyAccount = () => {
     }).replace(',', ' at');
   };
 
+  // Check if the user is an admin to hide Order History tab
+  const isAdmin = profileData?.role === 'ADMIN';
+
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4, color: 'text.primary' }}>
       <Typography variant="h4" sx={{ mb: 3, color: '#AB47BC' }}>
@@ -82,7 +86,9 @@ const MyAccount = () => {
         <Box sx={{ borderBottom: 1, borderColor: '#333', mb: 3 }}>
           <Tabs value={activeTab} onChange={handleTabChange} aria-label="account tabs" TabIndicatorProps={{ style: { backgroundColor: '#AB47BC' } }}>
             <Tab label="Profile" sx={{ color: 'text.primary', '&.Mui-selected': { color: '#AB47BC' } }} />
-            <Tab label="Order History" sx={{ color: 'text.primary', '&.Mui-selected': { color: '#AB47BC' } }} />
+            {!isAdmin && (
+              <Tab label="Order History" sx={{ color: 'text.primary', '&.Mui-selected': { color: '#AB47BC' } }} />
+            )}
             <Tab label="Addresses" disabled sx={{ color: 'text.primary' }} />
           </Tabs>
         </Box>
@@ -128,15 +134,8 @@ const MyAccount = () => {
                 </Box>
               </Box>
             </Box>
-            <Button
-              variant="contained"
-              sx={{ backgroundColor: '#AB47BC', color: 'white', '&:hover': { backgroundColor: '#9C27B0' }, mt: 2 }}
-              onClick={handleEditProfile}
-            >
-              Edit Profile
-            </Button>
           </Box>
-        ) : activeTab === 1 && orderHistory.length > 0 ? (
+        ) : activeTab === 1 && orderHistory.length > 0 && !isAdmin ? (
           <Box>
             <Typography variant="h6" gutterBottom sx={{ color: 'text.primary' }}>
               Your Orders

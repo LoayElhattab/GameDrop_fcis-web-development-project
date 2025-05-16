@@ -1,13 +1,9 @@
-// gamedrop-frontend/src/components/common/AppNavbar.jsx
-
-
-import { AppBar, Toolbar, Typography, Button, Box, IconButton, Link as MuiLink } from '@mui/material';
-import { Link as RouterLink, useNavigate } from 'react-router-dom'; // Use RouterLink for navigation
-import { useAuth } from '../contexts/AuthContext'; // Import the useAuth hook
+import { AppBar, Toolbar, Typography, Button, Box, IconButton, Link as MuiLink, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Snackbar, Alert } from '@mui/material';
+import { Link as RouterLink, useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 import ProductSearch from './ProductSearch';
-import React, { useState } from 'react';
 import ProductFilter from './ProductFilter';
-// import GamepadIcon from '@mui/icons-material/Gamepad'; // Example icon if desired
+import React, { useState } from 'react';
 
 /**
  * Application navigation bar component.
@@ -17,51 +13,52 @@ const AppNavbar = () => {
   const { isAuthenticated, isAdmin, user, logout } = useAuth();
   const [searchTerm, setSearchTerm] = useState('');
   const [filterCriteria, setFilterCriteria] = useState({
-    platform: '', genre: ''
+    platform: '',
+    genre: ''
   });
-  const navigate = useNavigate(); // Hook for navigation
+  const navigate = useNavigate();
+  const [openConfirm, setOpenConfirm] = useState(false);
+  const [openSuccess, setOpenSuccess] = useState(false);
 
-  // Basic styling to match the prototype's dark, slightly purple/blue look
   const navbarStyles = {
-    backgroundColor: '#1a202c', // Dark background color
-    color: '#ffffff', // White text color
-    boxShadow: 'none', // Remove default shadow if prototype has none
+    backgroundColor: '#1a202c',
+    color: '#ffffff',
+    boxShadow: 'none',
   };
 
   const logoTextStyles = {
-    mr: 2, // Margin right
+    mr: 2,
     fontWeight: 700,
     letterSpacing: '.2rem',
-    color: 'inherit', // Inherit text color from parent (white)
+    color: 'inherit',
     textDecoration: 'none',
   };
 
   const navLinkStyles = {
-    color: 'inherit', // Inherit text color
+    color: 'inherit',
     textDecoration: 'none',
-    mx: 1, // Horizontal margin
+    mx: 1,
     '&:hover': {
-      textDecoration: 'underline', // Simple hover effect
+      textDecoration: 'underline',
     },
   };
 
   const authButtonStyles = {
-    mx: 1, // Horizontal margin
+    mx: 1,
   };
+
   const handleSearchChange = (value) => {
     setSearchTerm(value);
   };
 
-  // Handler for when the search is submitted (e.g., Enter key or search icon click)
   const handleSearchSubmit = () => {
-    if (searchTerm.trim()) { // Only navigate if the search term is not empty
-      // Navigate to the /products page with the search term as a query parameter
+    if (searchTerm.trim()) {
       navigate(`/search-results?search=${encodeURIComponent(searchTerm.trim())}`);
     } else {
-      // Optional: Show a message or just navigate to products page without search
       navigate('/products/getProducts');
     }
   };
+
   const buildQueryParams = (currentSearchTerm, currentFilterCriteria) => {
     const params = new URLSearchParams();
     if (currentSearchTerm) {
@@ -75,51 +72,62 @@ const AppNavbar = () => {
     }
     return params.toString();
   };
+
   const handleFilterChange = ({ type, value }) => {
     const newFilterCriteria = {
       ...filterCriteria,
-      [type]: value, // Update the specific filter type (platform or genre)
+      [type]: value,
     };
     setFilterCriteria(newFilterCriteria);
     const params = buildQueryParams(searchTerm, newFilterCriteria);
-    // Navigate to the /products page with the search term as a query parameter
     navigate(`/search-results${params ? `?${params}` : ''}`);
   };
+
+  const handleLogoutClick = () => {
+    setOpenConfirm(true);
+  };
+
+  const handleConfirmLogout = () => {
+    logout();
+    setOpenConfirm(false);
+    setOpenSuccess(true);
+  };
+
+  const handleCloseConfirm = () => {
+    setOpenConfirm(false);
+  };
+
+  const handleCloseSuccess = () => {
+    setOpenSuccess(false);
+  };
+
   return (
     <AppBar position="static" sx={navbarStyles}>
       <Toolbar>
-        {/* Site Title/Logo */}
-        {/* Replace Typography with an actual image component if you have the logo */}
         <Typography
           variant="h6"
           noWrap
-          component={RouterLink} // Use RouterLink for navigation
+          component={RouterLink}
           to="/"
           sx={logoTextStyles}
         >
           GAMEDROP
         </Typography>
 
-        {/* Navigation Links */}
-        <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}> {/* Hide on small screens */}
-          <Button component={RouterLink} to="/" sx={navLinkStyles}> {/* Use Button for better styling */}
+        <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
+          <Button component={RouterLink} to="/" sx={navLinkStyles}>
             Home
           </Button>
-          {/* Assuming index page is products list, no explicit /products route in TRD */}
-          {/* <Button component={RouterLink} to="/products" sx={navLinkStyles}> */}
-          {/* Products */}
-          {/* </Button> */}
-          {isAuthenticated && ( // Only show cart if authenticated
+          {isAuthenticated && !isAdmin && (
             <Button component={RouterLink} to="/cart" sx={navLinkStyles}>
               Cart
             </Button>
           )}
-          {isAdmin && ( // Only show admin link if admin
-            <Button  component={RouterLink} to="/admin" sx={navLinkStyles}>
+          {isAdmin && (
+            <Button component={RouterLink} to="/admin" sx={navLinkStyles}>
               Admin
             </Button>
           )}
-
         </Box>
         <ProductSearch
           searchTerm={searchTerm}
@@ -130,28 +138,23 @@ const AppNavbar = () => {
           filterCriteria={filterCriteria}
           onFilterChange={handleFilterChange}
         />
-        {/* Auth Links/Buttons */}
         <Box sx={{ flexGrow: 0 }}>
           {isAuthenticated ? (
             <>
-              {/* User Profile Link (conditional) */}
-              {user && ( // Display username or "Account"
+              {user && (
                 <Button component={RouterLink} to="/profile" sx={authButtonStyles}>
-                  {user.username || 'Account'} {/* Display username if available */}
+                  {user.username || 'Account'}
                 </Button>
               )}
-              {/* Logout Button */}
-              <Button variant="outlined" color="primary" onClick={logout} sx={authButtonStyles}>
+              <Button variant="outlined" color="primary" onClick={handleLogoutClick} sx={authButtonStyles}>
                 Logout
               </Button>
             </>
           ) : (
             <>
-              {/* Login Link */}
               <Button component={RouterLink} to="/login" sx={authButtonStyles}>
                 Login
               </Button>
-              {/* Register Link */}
               <Button component={RouterLink} to="/register" variant="contained" color="primary" sx={authButtonStyles}>
                 Register
               </Button>
@@ -159,6 +162,38 @@ const AppNavbar = () => {
           )}
         </Box>
       </Toolbar>
+      <Dialog open={openConfirm} onClose={handleCloseConfirm}>
+        <DialogTitle>Confirm Logout</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Are you sure you want to logout?
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseConfirm} color="primary">
+            No
+          </Button>
+          <Button onClick={handleConfirmLogout} color="primary" autoFocus>
+            Yes
+          </Button>
+        </DialogActions>
+      </Dialog>
+      <Snackbar
+        open={openSuccess}
+        autoHideDuration={3000}
+        onClose={handleCloseSuccess}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+      >
+        <Alert onClose={handleCloseSuccess} severity="success" sx={{ width: '100%', backgroundColor: '#1a202c', color: '#ffffff' }}>
+          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+            <Box sx={{ mr: 1 }}>✓</Box>
+            <Typography>Logout successfully.</Typography>
+            <IconButton size="small" onClick={handleCloseSuccess}>
+              <span style={{ color: '#ffffff' }}>×</span>
+            </IconButton>
+          </Box>
+        </Alert>
+      </Snackbar>
     </AppBar>
   );
 };

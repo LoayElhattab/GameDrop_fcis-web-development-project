@@ -141,7 +141,8 @@ exports.Prisma.ProductScalarFieldEnum = {
   cover_image_url: 'cover_image_url',
   release_date: 'release_date',
   created_at: 'created_at',
-  updated_at: 'updated_at'
+  updated_at: 'updated_at',
+  is_deleted: 'is_deleted'
 };
 
 exports.Prisma.CartScalarFieldEnum = {

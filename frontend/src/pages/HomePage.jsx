@@ -7,6 +7,7 @@ import playstationIcon from '../assets/images/PS.png';
 import xboxIcon from '../assets/images/Xbox.png';
 import nintendoIcon from '../assets/images/Nintendo.png';
 import pcIcon from '../assets/images/PC.png';
+import { useAuth } from '../contexts/AuthContext';
 
 const platforms = [
     { name: 'PlayStation', image: playstationIcon },
@@ -21,6 +22,7 @@ function HomePage() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const navigate = useNavigate();
+    const { isAdmin } = useAuth();
 
     useEffect(() => {
         const fetchProducts = async () => {
@@ -285,7 +287,7 @@ function HomePage() {
                                     md={3}
                                     key={product.id}
                                     sx={{
-                                        display: 'flex', // Ensure Grid item uses flex to control child size
+                                        display: 'flex',
                                         animation: `fadeIn 0.6s ease-in-out ${index * 0.2}s forwards`,
                                         opacity: 0,
                                         '@keyframes fadeIn': {
@@ -294,7 +296,7 @@ function HomePage() {
                                         },
                                     }}
                                 >
-                                    <ProductCard product={product} />
+                                    <ProductCard product={product} isAdmin={isAdmin} />
                                 </Grid>
                             ))}
                             {featuredGames.length === 0 && !loading && (
@@ -360,7 +362,7 @@ function HomePage() {
                                     md={3}
                                     key={product.id}
                                     sx={{
-                                        display: 'flex', // Ensure Grid item uses flex to control child size
+                                        display: 'flex',
                                         animation: `fadeIn 0.6s ease-in-out ${index * 0.2}s forwards`,
                                         opacity: 0,
                                         '@keyframes fadeIn': {
@@ -369,7 +371,7 @@ function HomePage() {
                                         },
                                     }}
                                 >
-                                    <ProductCard product={product} />
+                                    <ProductCard product={product} isAdmin={isAdmin} />
                                 </Grid>
                             ))}
                             {specialDeals.length === 0 && !loading && (
