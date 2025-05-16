@@ -1,46 +1,44 @@
-// gamedrop-frontend/src/pages/HomePage.jsx
 import React, { useEffect, useState } from 'react';
 import { Box, Typography, Button, Container, Grid, Card, CardContent } from '@mui/material';
-import apiClient from '../api/apiClient'; // Assuming apiClient is configured here
-import ProductCard from '../components/ProductCard'; // Assuming ProductCard is created here
-import { Link, useNavigate } from 'react-router-dom'; // Import Link and useNavigate
-import playstationIcon from '../assets/images/PS.png'; // Adjust path based on your exact structure
-import xboxIcon from '../assets/images/Xbox.png';   // Adjust path
-import nintendoIcon from '../assets/images/Nintendo.png'; // Adjust path
+import apiClient from '../api/apiClient';
+import ProductCard from '../components/ProductCard';
+import { Link, useNavigate } from 'react-router-dom';
+import playstationIcon from '../assets/images/PS.png';
+import xboxIcon from '../assets/images/Xbox.png';
+import nintendoIcon from '../assets/images/Nintendo.png';
 import pcIcon from '../assets/images/PC.png';
 
-// Placeholder data for platforms - replace with dynamic data if needed
 const platforms = [
     { name: 'PlayStation', image: playstationIcon },
     { name: 'Xbox', image: xboxIcon },
     { name: 'Nintendo', image: nintendoIcon },
     { name: 'PC', image: pcIcon },
 ];
+
 function HomePage() {
     const [featuredGames, setFeaturedGames] = useState([]);
     const [specialDeals, setSpecialDeals] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);// State for the search input
+    const [error, setError] = useState(null);
     const navigate = useNavigate();
+
     useEffect(() => {
         const fetchProducts = async () => {
             try {
-                // Fetch featured games (example: filter by a 'featured' flag or sort)
                 const featuredResponse = await apiClient.get('/products/getProducts', {
                     params: {
-                        isFeatured: true, limit: 6
-
+                        isFeatured: true,
+                        limit: 3
                     },
-                    withCredentials: true // Example filter/limit
+                    withCredentials: true
                 });
-                setFeaturedGames(featuredResponse.data.products || []); // Assuming API returns { products: [...], total: N }
+                setFeaturedGames(featuredResponse.data.products || []);
 
-                // Fetch special deals (example: filter by a 'discount' flag or sort by price)
                 const dealsResponse = await apiClient.get('/products/getProducts', {
-                    params: { hasDiscount: true, limit: 4 },
-                    withCredentials: true // Example filter/limit
+                    params: { hasDiscount: true, limit: 3 },
+                    withCredentials: true
                 });
-                setSpecialDeals(dealsResponse.data.products || []); // Assuming API returns { products: [...], total: N }
+                setSpecialDeals(dealsResponse.data.products || []);
 
                 setLoading(false);
             } catch (err) {
@@ -51,10 +49,6 @@ function HomePage() {
 
         fetchProducts();
     }, []);
-
-    // Handler for when the search input value changes
-
-
 
     if (loading) {
         return <Typography color="text.primary">Loading...</Typography>;
@@ -67,8 +61,8 @@ function HomePage() {
     return (
         <Box
             sx={{
-                backgroundColor: '#121212', // Dark background color
-                color: '#ffffff', // White text color
+                backgroundColor: '#121212',
+                color: '#ffffff',
                 minHeight: '100vh',
                 paddingY: 4,
             }}
@@ -78,8 +72,8 @@ function HomePage() {
                 <Box
                     sx={{
                         position: 'relative',
-                        height: { xs: 300, md: 400 }, // Adjust height responsively
-                        backgroundImage: 'linear-gradient(to right, #5e35b1, #d81b60)', // Example gradient
+                        height: { xs: 300, md: 400 },
+                        backgroundImage: 'linear-gradient(to right, #5e35b1, #d81b60)',
                         backgroundSize: 'cover',
                         backgroundPosition: 'center',
                         display: 'flex',
@@ -88,7 +82,7 @@ function HomePage() {
                         alignItems: 'center',
                         textAlign: 'center',
                         borderRadius: 2,
-                        mb: 8, // Margin bottom
+                        mb: 8,
                         padding: 3,
                     }}
                 >
@@ -98,140 +92,326 @@ function HomePage() {
                     <Typography variant="h6" component="p" gutterBottom sx={{ color: '#e0e0e0', mb: 4 }}>
                         Discover the latest games for all platforms. Fast delivery, great prices, and exclusive deals.
                     </Typography>
-
-                    {/* Integrated Product Search */}
-                    <Box sx={{ width: '100%', maxWidth: 500 }}> {/* Limit search bar width */}
-
+                    <Box sx={{ width: '100%', maxWidth: 500 }}>
+                        {/* Search bar placeholder */}
                     </Box>
-
-
-                    <Box sx={{ mt: 4 }}> {/* Add spacing above buttons */}
+                    <Box sx={{ mt: 4 }}>
                         <Button
                             onClick={() => navigate('/search-results')}
                             variant="contained"
                             color="primary"
                             size="large"
-                            to="/products"
                             sx={{ mr: 2, backgroundColor: '#7e57c2', '&:hover': { backgroundColor: '#673ab7' } }}
                         >
                             Browse All Games
                         </Button>
-                        {/* You could link "View Deals" to a pre-filtered product list */}
-                        {/* <Button
-              variant="outlined"
-              color="secondary"
-              size="large"
-              component={Link}
-              to="/products?deal=true" // Example link with filter
-              sx={{ color: '#ffffff', borderColor: '#ffffff', '&:hover': { borderColor: '#e0e0e0', color: '#e0e0e0' } }}
-            >
-              View Deals
-            </Button> */}
                     </Box>
                 </Box>
 
                 {/* Shop by Platform Section */}
-                <Box sx={{ mb: 8 }}>
-                    <Typography variant="h4" component="h2" gutterBottom sx={{ color: '#ffffff', fontWeight: 'bold' }}>
+                <Box
+                    sx={{
+                        mb: 8,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        background: 'linear-gradient(145deg, #0f0f0f, #1e1e1e)',
+                        padding: 4,
+                        borderRadius: 4,
+                        position: 'relative',
+                        overflow: 'hidden',
+                        '&::before': {
+                            content: '""',
+                            position: 'absolute',
+                            top: 0,
+                            left: 0,
+                            width: '100%',
+                            height: '100%',
+                            background: 'radial-gradient(circle at center, rgba(255, 255, 255, 0.01), transparent 70%)',
+                            zIndex: 0,
+                        },
+                    }}
+                >
+                    <Typography
+                        variant="h4"
+                        component="h2"
+                        gutterBottom
+                        sx={{
+                            color: '#ffffff',
+                            fontWeight: '600',
+                            textAlign: 'left',
+                            textShadow: '0 0 4px rgba(255, 255, 255, 0.2)',
+                            zIndex: 1,
+                        }}
+                    >
                         Shop by Platform
                     </Typography>
-                    <Grid container spacing={3}>
-                        {platforms.map((platform) => (
-                            <Button
-                                onClick={() => navigate(`/search-results?platform=${encodeURIComponent(platform.name)}`)}
+                    <Grid container spacing={3} justifyContent="center">
+                        {platforms.map((platform, index) => (
+                            <Grid
+                                item
+                                xs={12}
+                                sm={6}
+                                md={3}
+                                key={platform.name}
+                                sx={{
+                                    animation: `fadeIn 0.6s ease-in-out ${index * 0.2}s forwards`,
+                                    opacity: 0,
+                                    '@keyframes fadeIn': {
+                                        '0%': { opacity: 0, transform: 'translateY(15px)' },
+                                        '100%': { opacity: 1, transform: 'translateY(0)' },
+                                    },
+                                }}
                             >
-                                <Grid item xs={12} sm={6} md={3} key={platform.name}>
+                                <Button
+                                    onClick={() => navigate(`/search-results?platform=${encodeURIComponent(platform.name)}`)}
+                                    sx={{ width: '100%', height: '100%', padding: 0 }}
+                                >
                                     <Card
                                         sx={{
-                                            backgroundColor: '#1e1e1e', // Dark card background
+                                            background: 'transparent',
                                             color: '#ffffff',
                                             textAlign: 'center',
-                                            height: '100%',
+                                            height: 120,
+                                            width: 120,
                                             display: 'flex',
                                             flexDirection: 'column',
                                             justifyContent: 'center',
                                             alignItems: 'center',
                                             padding: 2,
+                                            borderRadius: 8,
+                                            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.3)',
+                                            transition: 'transform 0.4s ease, box-shadow 0.4s ease',
                                             '&:hover': {
-                                                backgroundColor: '#2a2a2a',
-                                                cursor: 'pointer',
+                                                transform: 'scale(1.05)',
+                                                boxShadow: '0 4px 12px rgba(255, 255, 255, 0.2)',
                                             },
                                         }}
-                                    // You might add a Link component here later to navigate to platform-filtered products
-                                    // For example: component={Link} to={`/products?platform=${encodeURIComponent(platform.name)}`}
                                     >
-                                        {/* Placeholder for platform icon/image */}
-                                        <Box sx={{ width: 60, height: 60, backgroundColor: '#424242', borderRadius: '50%', mb: 1 }} >
+                                        <Box
+                                            sx={{
+                                                width: 60,
+                                                height: 60,
+                                                display: 'flex',
+                                                justifyContent: 'center',
+                                                alignItems: 'center',
+                                                boxShadow: '0 0 6px rgba(255, 255, 255, 0.1)',
+                                                transition: 'box-shadow 0.4s ease',
+                                                '&:hover': {
+                                                    boxShadow: '0 0 10px rgba(255, 255, 255, 0.3)',
+                                                },
+                                            }}
+                                        >
                                             <img
-                                                src={platform.image || ''} // Use platform image or a generic placeholder
+                                                src={platform.image || ''}
                                                 alt={`${platform.name} Icon`}
-                                                style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} // Style the image to fit and cover the circular container
+                                                style={{
+                                                    width: '100%',
+                                                    height: '100%',
+                                                    objectFit: 'contain',
+                                                }}
                                             />
                                         </Box>
-                                        <Typography variant="h6">{platform.name}</Typography>
+                                        <Typography
+                                            variant="h6"
+                                            sx={{
+                                                fontSize: '1rem',
+                                                fontWeight: '400',
+                                                textShadow: '0 0 3px rgba(255, 255, 255, 0.15)',
+                                                transition: 'text-shadow 0.4s ease',
+                                                '&:hover': {
+                                                    textShadow: '0 0 6px rgba(255, 255, 255, 0.3)',
+                                                },
+                                            }}
+                                        >
+                                            {platform.name}
+                                        </Typography>
                                     </Card>
-                                </Grid>
-                            </Button>
+                                </Button>
+                            </Grid>
                         ))}
                     </Grid>
                 </Box>
 
                 {/* Featured Games Section */}
-                <Box sx={{ mb: 8 }}>
-                    <Typography variant="h4" component="h2" gutterBottom sx={{ color: '#ffffff', fontWeight: 'bold' }}>
+                <Box
+                    sx={{
+                        mb: 8,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                    }}
+                >
+                    <Typography
+                        variant="h4"
+                        component="h2"
+                        gutterBottom
+                        sx={{
+                            color: '#ffffff',
+                            fontWeight: 'bold',
+                            textAlign: 'center',
+                        }}
+                    >
                         Featured Games
                     </Typography>
-                    <Grid container spacing={3}>
-                        {featuredGames.map((product) => (
-                            <Grid item xs={12} sm={6} md={3} key={product.id}>
-                                <ProductCard product={product} />
-                            </Grid>
-                        ))}
-                        {featuredGames.length === 0 && !loading && (
-                            <Grid item xs={12}>
-                                <Typography sx={{ textAlign: 'center', color: '#bdbdbd' }}>No featured games found.</Typography>
-                            </Grid>
-                        )}
-                    </Grid>
+                    <Box
+                        sx={{
+                            background: 'linear-gradient(145deg, #0f0f0f, #1e1e1e)',
+                            borderRadius: 2,
+                            padding: 3,
+                            width: { xs: '100%', md: '90%' },
+                            maxWidth: 1200,
+                            boxShadow: '0 2px 10px rgba(0, 0, 0, 0.5)',
+                            overflow: 'hidden',
+                            position: 'relative',
+                            '&::before': {
+                                content: '""',
+                                position: 'absolute',
+                                top: 0,
+                                left: 0,
+                                width: '100%',
+                                height: '100%',
+                                background: 'radial-gradient(circle at center, rgba(255, 255, 255, 0.01), transparent 70%)',
+                                zIndex: 0,
+                            },
+                        }}
+                    >
+                        <Grid container spacing={3} justifyContent="center">
+                            {featuredGames.map((product, index) => (
+                                <Grid
+                                    item
+                                    xs={12}
+                                    sm={6}
+                                    md={3}
+                                    key={product.id}
+                                    sx={{
+                                        display: 'flex', // Ensure Grid item uses flex to control child size
+                                        animation: `fadeIn 0.6s ease-in-out ${index * 0.2}s forwards`,
+                                        opacity: 0,
+                                        '@keyframes fadeIn': {
+                                            '0%': { opacity: 0, transform: 'translateY(15px)' },
+                                            '100%': { opacity: 1, transform: 'translateY(0)' },
+                                        },
+                                    }}
+                                >
+                                    <ProductCard product={product} />
+                                </Grid>
+                            ))}
+                            {featuredGames.length === 0 && !loading && (
+                                <Grid item xs={12}>
+                                    <Typography sx={{ textAlign: 'center', color: '#bdbdbd' }}>
+                                        No featured games found.
+                                    </Typography>
+                                </Grid>
+                            )}
+                        </Grid>
+                    </Box>
                 </Box>
 
                 {/* Special Deals Section */}
-                <Box sx={{ mb: 8 }}>
-                    <Typography variant="h4" component="h2" gutterBottom sx={{ color: '#ffffff', fontWeight: 'bold' }}>
+                <Box
+                    sx={{
+                        mb: 8,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                    }}
+                >
+                    <Typography
+                        variant="h4"
+                        component="h2"
+                        gutterBottom
+                        sx={{
+                            color: '#ffffff',
+                            fontWeight: 'bold',
+                            textAlign: 'center',
+                        }}
+                    >
                         Special Deals
                     </Typography>
-                    <Grid container spacing={3}>
-                        {specialDeals.map((product) => (
-                            <Grid item xs={12} sm={6} md={3} key={product.id}>
-                                <ProductCard product={product} />
-                            </Grid>
-                        ))}
-                        {specialDeals.length === 0 && !loading && (
-                            <Grid item xs={12}>
-                                <Typography sx={{ textAlign: 'center', color: '#bdbdbd' }}>No special deals found.</Typography>
-                            </Grid>
-                        )}
-                    </Grid>
+                    <Box
+                        sx={{
+                            background: 'linear-gradient(145deg, #0f0f0f, #1e1e1e)',
+                            borderRadius: 2,
+                            padding: 3,
+                            width: { xs: '100%', md: '90%' },
+                            maxWidth: 1200,
+                            boxShadow: '0 2px 10px rgba(0, 0, 0, 0.5)',
+                            overflow: 'hidden',
+                            position: 'relative',
+                            '&::before': {
+                                content: '""',
+                                position: 'absolute',
+                                top: 0,
+                                left: 0,
+                                width: '100%',
+                                height: '100%',
+                                background: 'radial-gradient(circle at center, rgba(255, 255, 255, 0.01), transparent 70%)',
+                                zIndex: 0,
+                            },
+                        }}
+                    >
+                        <Grid container spacing={3} justifyContent="center">
+                            {specialDeals.map((product, index) => (
+                                <Grid
+                                    item
+                                    xs={12}
+                                    sm={6}
+                                    md={3}
+                                    key={product.id}
+                                    sx={{
+                                        display: 'flex', // Ensure Grid item uses flex to control child size
+                                        animation: `fadeIn 0.6s ease-in-out ${index * 0.2}s forwards`,
+                                        opacity: 0,
+                                        '@keyframes fadeIn': {
+                                            '0%': { opacity: 0, transform: 'translateY(15px)' },
+                                            '100%': { opacity: 1, transform: 'translateY(0)' },
+                                        },
+                                    }}
+                                >
+                                    <ProductCard product={product} />
+                                </Grid>
+                            ))}
+                            {specialDeals.length === 0 && !loading && (
+                                <Grid item xs={12}>
+                                    <Typography sx={{ textAlign: 'center', color: '#bdbdbd' }}>
+                                        No special deals found.
+                                    </Typography>
+                                </Grid>
+                            )}
+                        </Grid>
+                    </Box>
                 </Box>
 
                 {/* Stay Updated Section (Placeholder) */}
                 <Box
                     sx={{
-                        backgroundColor: '#1e1e1e',
+                        background: 'linear-gradient(145deg, #0f0f0f, #1e1e1e)',
                         padding: 4,
                         textAlign: 'center',
                         borderRadius: 2,
                         mb: 8,
+                        position: 'relative',
+                        overflow: 'hidden',
+                        '&::before': {
+                            content: '""',
+                            position: 'absolute',
+                            top: 0,
+                            left: 0,
+                            width: '100%',
+                            height: '100%',
+                            background: 'radial-gradient(circle at center, rgba(255, 255, 255, 0.01), transparent 70%)',
+                            zIndex: 0,
+                        },
                     }}
                 >
-                    <Typography variant="h4" component="h2" gutterBottom sx={{ color: '#ffffff', fontWeight: 'bold' }}>
+                    <Typography variant="h4" component="h2" gutterBottom sx={{ color: '#ffffff', fontWeight: 'bold', position: 'relative', zIndex: 1 }}>
                         Stay Updated
                     </Typography>
-                    <Typography variant="body1" sx={{ color: '#e0e0e0', mb: 2 }}>
+                    <Typography variant="body1" sx={{ color: '#e0e0e0', mb: 2, position: 'relative', zIndex: 1 }}>
                         Subscribe to our newsletter to get the latest news, updates, exclusive deals, and gaming insights.
                     </Typography>
-                    {/* Newsletter form placeholder */}
-                    <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2 }}>
+                    <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2, position: 'relative', zIndex: 1 }}>
                         {/* Input field and button will be added later */}
                     </Box>
                 </Box>
