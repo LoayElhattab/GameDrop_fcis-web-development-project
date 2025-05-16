@@ -1,9 +1,14 @@
-// gamedrop-frontend/src/context/CartContext.jsx
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import apiClient from '../api/apiClient'; // Your configured apiClient
 // Assuming you have an AuthContext to check if the user is logged in
 import { useAuth } from './AuthContext'; // Import useAuth - adjust the path if needed
-import { Snackbar, Alert } from '@mui/material';
+// Import Snackbar, Alert, Button, IconButton, and CloseIcon
+import { Snackbar, Alert, Button, IconButton } from '@mui/material';
+import CloseIcon from '@mui/icons-material/Close';
+// REMOVE useNavigate from here if you don't use it elsewhere in this file
+// import { useNavigate } from 'react-router-dom';
+
+
 // Define the initial shape of your cart context state and functions
 const CartContext = createContext({
   cartItems: [], // Array of items in the cart, including product details and quantity
@@ -15,13 +20,19 @@ const CartContext = createContext({
   updateItemQuantity: async (productId, quantity) => { }, // Function to update item quantity
   removeItem: async (productId) => { }, // Function to remove an item
   clearCart: async () => { }, // Function to clear the entire cart
-  // Optional: Add snackbar state if you want cart actions to trigger global notifications
-  // snackbar: { open: false, message: '', severity: 'success', onClose: () => {} },
+  // Add snackbar state and handler to the context value
+  snackbarOpen: false,
+  snackbarMessage: '',
+  snackbarSeverity: 'success',
+  handleSnackbarClose: () => { },
 });
 
-export const CartProvider = ({ children }) => {
+// Accept 'navigate' as a prop
+export const CartProvider = ({ children, navigate }) => {
   // Consume isAuthenticated from AuthContext
   const { isAuthenticated } = useAuth();
+  // We no longer use useSnackbar from a separate context
+
 
   // State to hold the cart items (array of objects, each with product details and quantity)
   const [cartItems, setCartItems] = useState([]);
@@ -32,12 +43,43 @@ export const CartProvider = ({ children }) => {
   // State to hold any error that occurs during API calls
   const [error, setError] = useState(null);
 
-  // Optional: Add snackbar state and functions if not handled by AuthContext
-  // const [snackbarOpen, setSnackbarOpen] = useState(false);
-  // const [snackbarMessage, setSnackbarMessage] = useState('');
-  // const snackbarSeverity = 'success'; // Default severity
-  // const showSnackbar = (message, severity) => { ... }; // Implementation needed
-  // const closeSnackbar = () => { ... }; // Implementation needed
+  // --- Snackbar State and Handlers ---
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState('');
+  const [snackbarSeverity, setSnackbarSeverity] = useState('success'); // Default severity
+  // State to control if the "Go to Cart" button should be shown
+  const [showGoToCartButton, setShowGoToCartButton] = useState(false);
+
+
+  // Function to show the snackbar
+  // Added an optional flag to show the "Go to Cart" button
+  const showSnackbar = useCallback((message, severity = 'success', showGoToCart = false) => {
+    setSnackbarMessage(message);
+    setSnackbarSeverity(severity);
+    setShowGoToCartButton(showGoToCart); // Set the flag
+    setSnackbarOpen(true);
+  }, []); // Dependencies are state setters, no need to list
+
+
+  // Function to close the snackbar
+  const handleSnackbarClose = useCallback((event, reason) => {
+    if (reason === 'clickaway') {
+      return;
+    }
+    setSnackbarOpen(false);
+    // Reset the button flag when the snackbar closes
+    setShowGoToCartButton(false);
+  }, []);
+
+  // Handler for the "Go to Cart" button click
+  const handleGoToCartClick = useCallback(() => {
+    if (navigate) { // Check if navigate function was provided
+      navigate('/cart'); // Navigate to the cart page
+    }
+    handleSnackbarClose(); // Close the snackbar
+  }, [navigate, handleSnackbarClose]); // Dependencies: navigate and handleSnackbarClose
+
+  // --- End Snackbar State and Handlers ---
 
 
   // Function to fetch the user's cart from the backend API
@@ -49,7 +91,7 @@ export const CartProvider = ({ children }) => {
       setCartItems([]);
       setCartTotal(0);
       setIsLoading(false); // Ensure loading state is off
-      setError(null);    // Clear any previous errors
+      setError(null);    // Clear any previous errors
       console.log("User not authenticated. Cart state cleared.");
       return; // Stop the function execution
     }
@@ -88,10 +130,11 @@ export const CartProvider = ({ children }) => {
       setCartItems([]);
       setCartTotal(0);
 
-      // Optional: Show an error snackbar message
-      // showSnackbar('Failed to load cart. Please try again.', 'error');
+      // Show an error snackbar message
+      showSnackbar('Failed to load cart. Please try again.', 'error');
     }
-  }, [isAuthenticated]); // Dependency: Recreate fetchCart if isAuthenticated status changes
+  }, [isAuthenticated, showSnackbar]); // Dependency: Add showSnackbar
+
 
   // Effect hook to call fetchCart when the component mounts or isAuthenticated changes
   useEffect(() => {
@@ -105,8 +148,8 @@ export const CartProvider = ({ children }) => {
   const addItem = async (productId, quantity = 1) => {
     if (!isAuthenticated) {
       console.log("User not authenticated. Cannot add item to cart.");
-      // Optional: Show a message prompting the user to log in
-      // showSnackbar('Please log in to add items to your cart.', 'info');
+      // Show a message prompting the user to log in
+      showSnackbar('Please log in to add items to your cart.', 'info');
       return;
     }
     setIsLoading(true);
@@ -120,13 +163,14 @@ export const CartProvider = ({ children }) => {
 
       // After successful API call, fetch the updated cart state from the backend
       await fetchCart();
-      // Optional: Show success message
-      // showSnackbar('Item added to cart.', 'success');
+      // Show success message WITH the "Go to Cart" button and the close button
+      showSnackbar('Item added to cart!', 'success', true); // Pass true to show the "Go to Cart" button
     } catch (err) {
       console.error('Error adding item to cart:', err);
       setError(err);
-      // Optional: Show error message
-      // showSnackbar('Failed to add item to cart.', 'error');
+      // Show error message
+      const errorMessage = err.response?.data?.message || err.message || 'Failed to add item to cart.';
+      showSnackbar(errorMessage, 'error');
     } finally {
       setIsLoading(false);
     }
@@ -134,10 +178,16 @@ export const CartProvider = ({ children }) => {
 
   // Function to update the quantity of an existing item in the cart
   const updateItemQuantity = async (productId, quantity) => {
-    if (!isAuthenticated) return; // Only for authenticated users
+    if (!isAuthenticated) {
+      showSnackbar('Please log in to update your cart.', 'info');
+      return;
+    }
     // Prevent updating to zero or negative quantity via this function (removeItem should be used for removal)
     if (quantity <= 0) {
-      console.warn("Attempted to update item quantity to zero or less. Use removeItem instead.");
+      console.warn("Attempted to update item quantity to zero or less via updateItemQuantity. Use removeItem instead.");
+      // Optionally show a message or call removeItem
+      // showSnackbar('Quantity cannot be less than one. Item removed.', 'info');
+      // removeItem(productId); // Consider calling removeItem here if quantity becomes 0
       return;
     }
     setIsLoading(true);
@@ -147,16 +197,16 @@ export const CartProvider = ({ children }) => {
       // Make PUT request to update item quantity
       const response = await apiClient.put(`/cart/items/${productId}`, { quantity });
       console.log('Update quantity response:', response.data);
-      setCartTotal(cartTotal + 10);
       // After successful API call, fetch the updated cart state
       await fetchCart();
-      // Optional: Show success message
-      // showSnackbar('Cart updated.', 'success');
+      // Show success message
+      showSnackbar('Cart updated.', 'success');
     } catch (err) {
       console.error('Error updating item quantity:', err);
       setError(err);
-      // Optional: Show error message
-      // showSnackbar('Failed to update cart.', 'error');
+      // Show error message
+      const errorMessage = err.response?.data?.message || err.message || 'Failed to update cart.';
+      showSnackbar(errorMessage, 'error');
     } finally {
       setIsLoading(false);
     }
@@ -164,7 +214,10 @@ export const CartProvider = ({ children }) => {
 
   // Function to remove an item from the cart
   const removeItem = async (productId) => {
-    if (!isAuthenticated) return; // Only for authenticated users
+    if (!isAuthenticated) {
+      showSnackbar('Please log in to remove items from your cart.', 'info');
+      return;
+    }
     setIsLoading(true);
     setError(null);
     try {
@@ -175,13 +228,14 @@ export const CartProvider = ({ children }) => {
 
       // After successful API call, fetch the updated cart state
       await fetchCart();
-      // Optional: Show success message
-      // showSnackbar('Item removed from cart.', 'success');
+      // Show success message
+      showSnackbar('Item removed from cart.', 'success');
     } catch (err) {
       console.error('Error removing item from cart:', err);
       setError(err);
-      // Optional: Show error message
-      // showSnackbar('Failed to remove item.', 'error');
+      // Show error message
+      const errorMessage = err.response?.data?.message || err.message || 'Failed to remove item.';
+      showSnackbar(errorMessage, 'error');
     } finally {
       setIsLoading(false);
     }
@@ -189,7 +243,10 @@ export const CartProvider = ({ children }) => {
 
   // Function to clear the entire cart
   const clearCart = async () => {
-    if (!isAuthenticated) return; // Only for authenticated users
+    if (!isAuthenticated) {
+      showSnackbar('Please log in to clear your cart.', 'info');
+      return;
+    }
     setIsLoading(true);
     setError(null);
     try {
@@ -202,13 +259,14 @@ export const CartProvider = ({ children }) => {
       setCartItems([]);
       setCartTotal(0);
       await fetchCart(); // Fetch again to be sure state is synced with backend
-      // Optional: Show success message
-      // showSnackbar('Cart cleared.', 'success');
+      // Show success message
+      showSnackbar('Cart cleared.', 'success');
     } catch (err) {
       console.error('Error clearing cart:', err);
       setError(err);
-      // Optional: Show error message
-      // showSnackbar('Failed to clear cart.', 'error');
+      // Show error message
+      const errorMessage = err.response?.data?.message || err.message || 'Failed to clear cart.';
+      showSnackbar(errorMessage, 'error');
     } finally {
       setIsLoading(false);
     }
@@ -226,20 +284,46 @@ export const CartProvider = ({ children }) => {
     updateItemQuantity,
     removeItem,
     clearCart,
-    // Include snackbar state/handlers if managed here
-    // snackbar: { open: snackbarOpen, message: snackbarMessage, severity: snackbarSeverity, onClose: closeSnackbar },
+    // Include snackbar state and handlers in the context value
+    snackbarOpen,
+    snackbarMessage,
+    snackbarSeverity,
+    handleSnackbarClose,
   };
 
   return (
     <CartContext.Provider value={contextValue}>
       {children}
-      {/* Render ConfirmationSnackbar here if cart context manages snackbars */}
-      {/* <ConfirmationSnackbar
-           open={snackbarOpen}
-           message={snackbarMessage}
-           severity={snackbarSeverity}
-           onClose={closeSnackbar}
-      /> */}
+      {/* Render the Snackbar component here */}
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={showGoToCartButton ? null : 6000} // Keep open if button is shown, otherwise auto-hide
+        onClose={handleSnackbarClose} // Snackbar's close handler
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }} // Position
+      >
+        <Alert
+          // REMOVE onClose={handleSnackbarClose} from Alert
+          severity={snackbarSeverity}
+          sx={{ width: '100%' }}
+          // Conditionally render the action content
+          action={
+            <React.Fragment> {/* Use Fragment to group multiple actions */}
+
+              {/* Always include the Close Icon Button */}
+              <IconButton
+                aria-label="close"
+                color="inherit"
+                size="small"
+                onClick={handleSnackbarClose}
+              >
+                <CloseIcon fontSize="small" />
+              </IconButton>
+            </React.Fragment>
+          }
+        >
+          {snackbarMessage}
+        </Alert>
+      </Snackbar>
     </CartContext.Provider>
   );
 };
@@ -253,6 +337,21 @@ export const useCart = () => {
   return context;
 };
 
-// Remember to wrap your application's root component (e.g., App.jsx) with
-// <CartProvider> and <AuthProvider>. AuthProvider should typically be an ancestor
-// of CartProvider since CartProvider depends on useAuth.
+// Important: You will need to pass the 'navigate' function as a prop
+// when you render the CartProvider in your application's component tree.
+// Example (in a component rendered inside your router):
+/*
+import { useNavigate } from 'react-router-dom';
+import { CartProvider } from './context/CartContext'; // Adjust the path
+
+function AppWrapper() { // Or in your main App component if it's inside Router
+    const navigate = useNavigate(); // Get the navigate function
+
+    return (
+        <CartProvider navigate={navigate}>
+            {/* Your application content, routes, etc. }
+            <YourRoutesComponent />
+        </CartProvider>
+    );
+}
+*/

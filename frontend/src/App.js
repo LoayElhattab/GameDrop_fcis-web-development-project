@@ -1,7 +1,7 @@
 // gamedrop-frontend/src/App.jsx
 
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom';
 import { ThemeProvider, createTheme, CssBaseline, Typography } from '@mui/material'; // Make sure createTheme and CssBaseline are imported
 import ScrollToTop from './components/ScrollToTop'; // Make sure ScrollToTop is imported
 // --- Import your Providers ---
@@ -142,6 +142,7 @@ const darkTheme = createTheme({
 });
 
 const App = () => {
+  //const nav = useNavigate();
   return (
     // Apply the custom dark theme
     <ThemeProvider theme={darkTheme}>
@@ -157,7 +158,7 @@ const App = () => {
           {/* CartProvider wraps the part of the app that needs cart context.
               Since CartPage and ProductCard (in MainLayout) use it,
               wrapping AuthProvider is appropriate. */}
-          <CartProvider> {/* <<< Start CartProvider <<< */}
+          <CartProvider > {/* <<< Start CartProvider <<< */}
 
             {/* Define your application routes */}
             <Routes>

@@ -3,10 +3,11 @@ import React from 'react';
 import { Card, CardMedia, CardContent, Typography, CardActions, Button, IconButton, Box } from '@mui/material';
 import AddShoppingCartIcon from '@mui/icons-material/AddShoppingCart';
 import { Link } from 'react-router-dom';
-import apiClient from '../api';
+// apiClient is not directly used in this component, so it can be removed if not needed elsewhere
+// import apiClient from '../api';
 
-// Assume CartContext provides an addToCart function (implemented in TM6)
-import { useCart } from '../contexts/CartContext';
+// Assume CartContext provides an addItem function
+import { useCart } from '../contexts/CartContext'; // Use the cart context - ensure correct path
 
 /**
  * Reusable component to display a single product card.
@@ -22,13 +23,13 @@ import { useCart } from '../contexts/CartContext';
  * @param {number} product.stock_quantity - The number of items in stock.
  */
 function ProductCard({ product }) {
-    // Use the useCart hook to access cart functionality (uncomment when CartContext is ready)
-    const { addItem } = useCart();
+    // Use the useCart hook to access cart functionality
+    const { addItem } = useCart(); // Get the addItem function
 
     // Placeholder for addToCart function before CartContext is implemented
     const handleAddToCart = () => {
-
-        console.log(`Adding product ${product.id} to cart`);
+        console.log(`Attempting to add product ${product.id} to cart`);
+        // Call addItem - the Snackbar logic is now handled inside the addItem function in CartContext
         addItem(product.id, 1);
     };
 
@@ -72,7 +73,7 @@ function ProductCard({ product }) {
                     {product.platform} | {product.genre}
                 </Typography>
                 <Typography variant="h5" sx={{ color: '#e0e0e0', fontWeight: 'bold' }}>
-                    ${parseFloat(product.price).toFixed(2)} | {product.price} {/* Format price to 2 decimal places */}
+                    ${parseFloat(product.price).toFixed(2)} {/* Format price to 2 decimal places */}
                 </Typography>
                 {/* Optional: Display stock status */}
                 {isOutOfStock && (
@@ -106,7 +107,7 @@ function ProductCard({ product }) {
                 <IconButton
                     color="primary"
                     aria-label="add to shopping cart"
-                    onClick={handleAddToCart}
+                    onClick={handleAddToCart} // This calls the addItem function from CartContext
                     disabled={isOutOfStock} // Disable if out of stock
                     sx={{
                         backgroundColor: '#7e57c2', // Purple background color
