@@ -1,5 +1,5 @@
 
-![Logo](https://i.ibb.co/xqkFvVfL/Logo-White.png)
+![LogoWhite](https://github.com/user-attachments/assets/ccffa949-d0a6-4b9e-a1e8-db3b06e2ecfd)
 
 # GameDrop
 
