@@ -14,11 +14,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import AdminProductFormPage from './AdminProductFormPage';
 import MuiAlert from '@mui/material/Alert';
 
-/**
- * Admin Products Management Page Component.
- * Displays a table of products for administration, with Add/Edit Product in a dialog.
- * Styled using Material UI.
- */
+
 const AdminProductsPage = () => {
     const navigate = useNavigate();
     const { user } = useAuth();
@@ -55,7 +51,6 @@ const AdminProductsPage = () => {
                 }
             });
 
-            // Filter out products with stock_quantity of 0
             const filteredProducts = response.data.products.filter(product => product.stock_quantity > 0);
 
             setProducts(filteredProducts);
@@ -119,7 +114,7 @@ const AdminProductsPage = () => {
             setTotalProducts(totalProducts - 1);
             setDeleteDialogOpen(false);
             setProductToDelete(null);
-            setSnackbarOpen(true); // Open snackbar on successful deletion
+            setSnackbarOpen(true);
         } catch (err) {
             console.error('Error in deletion:', err.response ? err.response.data : err);
             setError(err.response?.data?.error || 'Failed to delete product, this may be due to a foreign key constraint.');
@@ -351,7 +346,7 @@ const AdminProductsPage = () => {
 
             <Snackbar
                 open={snackbarOpen}
-                autoHideDuration={3000}
+                autoHideDuration={1000}
                 onClose={handleCloseSnackbar}
                 anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
             >

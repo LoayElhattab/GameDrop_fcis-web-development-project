@@ -7,20 +7,19 @@ import {
   Paper,
   Grid
 } from '@mui/material';
-import { useNavigate } from 'react-router-dom'; // Import useNavigate for navigation
-import CartItem from './CartItem'; // Import the CartItem component
+import { useNavigate } from 'react-router-dom'; 
+import CartItem from './CartItem'; 
 
-// CartDisplay component shows the list of items and the order summary
+
 const CartDisplay = ({ cartItems, cartTotal }) => {
-  const navigate = useNavigate(); // Hook for navigation
+  const navigate = useNavigate();
 
-  // Handle click on the Proceed to Checkout button
+
   const handleCheckoutClick = () => {
-    navigate('/checkout'); // Navigate to the checkout page
+    navigate('/checkout'); 
   };
 
   return (
-    // Use Grid to create the two-column layout
     <Grid container spacing={4}>
       {/* Left Column: Cart Items List */}
       <Grid item xs={12} md={8}>
@@ -29,7 +28,7 @@ const CartDisplay = ({ cartItems, cartTotal }) => {
         </Typography>
         <Box>
           {cartItems.map((item) => (
-            // Render CartItem for each item in the cart
+      
             <CartItem key={item.id} item={item} />
           ))}
         </Box>
@@ -88,7 +87,7 @@ const CartDisplay = ({ cartItems, cartTotal }) => {
             // Disable if cart is empty or loading
             disabled={cartItems.length === 0}
             sx={{
-              // Custom styling to match prototype's purple button
+            
               backgroundColor: '#673ab7', // Example purple color (adjust as needed to match theme)
               '&:hover': {
                 backgroundColor: '#5e35b1', // Darker purple on hover

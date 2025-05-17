@@ -4,11 +4,8 @@ import { useAuth } from '../contexts/AuthContext';
 import ProductSearch from './ProductSearch';
 import ProductFilter from './ProductFilter';
 import React, { useState } from 'react';
+import logoImage from '../assets/images/GameDrop.png';  
 
-/**
- * Application navigation bar component.
- * Styles based on v0.dev prototype navbar.
- */
 const AppNavbar = () => {
   const { isAuthenticated, isAdmin, user, logout } = useAuth();
   const [searchTerm, setSearchTerm] = useState('');
@@ -51,11 +48,14 @@ const AppNavbar = () => {
     setSearchTerm(value);
   };
 
-  const handleSearchSubmit = () => {
-    if (searchTerm.trim()) {
+ const handleSearchSubmit = () => {
+
+    if (searchTerm.trim()) { 
+    
       navigate(`/search-results?search=${encodeURIComponent(searchTerm.trim())}`);
+      setSearchTerm('');
     } else {
-      navigate('/products/getProducts');
+      navigate('/search-results');
     }
   };
 
@@ -104,16 +104,13 @@ const AppNavbar = () => {
   return (
     <AppBar position="static" sx={navbarStyles}>
       <Toolbar>
-        <Typography
-          variant="h6"
-          noWrap
+       <Box
           component={RouterLink}
           to="/"
-          sx={logoTextStyles}
+          sx={{ ...logoTextStyles, display: 'flex', alignItems: 'center' }}
         >
-          GAMEDROP
-        </Typography>
-
+          <img src={logoImage} alt="GameDrop Logo" style={{ height: '20px', width: 'auto' }} />
+        </Box>
         <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
           <Button component={RouterLink} to="/" sx={navLinkStyles}>
             Home

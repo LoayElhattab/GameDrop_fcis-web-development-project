@@ -3,10 +3,6 @@ import { Box, Typography, Container, Grid, Link as MuiLink, Dialog, DialogTitle,
 import { Link as RouterLink } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 
-/**
- * Application footer component.
- * Styles based on v0.dev prototype footer.
- */
 const AppFooter = () => {
   const { user, isAdmin } = useAuth();
   const [openTerms, setOpenTerms] = useState(false);
@@ -42,7 +38,7 @@ const AppFooter = () => {
             </Typography>
           </Grid>
 
-          {/* Account Links Section */}
+
           <Grid item xs={6} sm={2}>
             <Typography variant="h6" gutterBottom>
               Account

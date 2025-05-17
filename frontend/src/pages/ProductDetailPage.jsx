@@ -147,7 +147,6 @@ function ProductDetailPage() {
                 backgroundColor: '#121212',
                 color: '#ffffff',
                 minHeight: '100vh',
-                paddingY: 4,
             }}
         >
             <Container maxWidth="lg">
@@ -155,21 +154,20 @@ function ProductDetailPage() {
                     <Grid item xs={12} md={6}>
                         <Box
                             sx={{
-                                backgroundColor: '#1e1e1e',
                                 borderRadius: 2,
-                                padding: 2,
+                                height: { xs: 300, md: 650 },
+                                overflow: 'hidden',
                                 display: 'flex',
                                 justifyContent: 'center',
                                 alignItems: 'center',
-                                height: { xs: 300, md: 400 },
                             }}
                         >
                             <CardMedia
                                 component="img"
                                 sx={{
-                                    maxWidth: '100%',
-                                    maxHeight: '100%',
-                                    objectFit: 'contain',
+                                    width: '100%',
+                                    height: '100%',
+                                    objectFit: 'cover',
                                     borderRadius: 1,
                                 }}
                                 image={product.cover_image_url || '/placeholder-image.png'}
@@ -197,11 +195,6 @@ function ProductDetailPage() {
                             <Typography variant="body1" gutterBottom sx={{ color: product.stock_quantity > 10 ? '#81c784' : (product.stock_quantity > 0 ? '#ffb74d' : '#e57373') }}>
                                 Stock Status: {isOutOfStock ? 'Out of Stock' : (product.stock_quantity <= 10 ? `Low Stock (${product.stock_quantity})` : 'In Stock')}
                             </Typography>
-                            {product.description && (
-                                <Typography variant="body2" sx={{ color: '#e0e0e0', mt: 2, maxHeight: 100, overflowY: 'auto' }}>
-                                    {product.description.substring(0, 200)}...
-                                </Typography>
-                            )}
 
                             <Button
                                 variant="contained"
@@ -221,24 +214,6 @@ function ProductDetailPage() {
                                 }}
                             >
                                 {isOutOfStock ? 'Out of Stock' : 'Add to Cart'}
-                            </Button>
-
-                            <Button
-                                variant="outlined"
-                                size="large"
-                                sx={{
-                                    mt: 3,
-                                    ml: 2,
-                                    color: '#ffffff',
-                                    borderColor: '#7e57c2',
-                                    '&:hover': {
-                                        borderColor: '#673ab7',
-                                        backgroundColor: 'rgba(126, 87, 194, 0.08)',
-                                    },
-                                }}
-                                disabled
-                            >
-                                Add to Wishlist (Soon)
                             </Button>
                         </Box>
                     </Grid>
@@ -313,4 +288,4 @@ function ProductDetailPage() {
     );
 }
 
-export default ProductDetailPage;
+export default ProductDetailPage;   

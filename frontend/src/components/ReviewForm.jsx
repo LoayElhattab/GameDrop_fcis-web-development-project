@@ -1,16 +1,13 @@
-// gamedrop-frontend/src/components/ReviewForm.jsx
 import React, { useState, useEffect } from 'react';
 import { Box, Typography, TextField, Button, CircularProgress, Alert } from '@mui/material';
 import Rating from '@mui/material/Rating';
 import apiClient from '../api/apiClient';
 import { useAuth } from '../contexts/AuthContext';
-// Optional: Import useSnackbar if you implemented a Snackbar context
-// import { useSnackbar } from '../context/SnackbarContext';
+
 
 
 const ReviewForm = ({ productId, onReviewSubmitted, hasUserReviewed }) => { // Accept hasUserReviewed prop
     const { isAuthenticated } = useAuth();
-    // Optional: const { showSnackbar } = useSnackbar();
 
     const [comment, setComment] = useState('');
     const [rate, setRate] = useState(0);
@@ -19,9 +16,7 @@ const ReviewForm = ({ productId, onReviewSubmitted, hasUserReviewed }) => { // A
     const [submissionError, setSubmissionError] = useState(null);
     const [submissionSuccess, setSubmissionSuccess] = useState(false);
 
-    // Clear form and submission status when productId changes
-    // We don't need to clear specifically for hasUserReviewed change
-    // because we will conditionally render the whole form.
+   
     useEffect(() => {
         setComment('');
         setRate(0);
@@ -34,17 +29,14 @@ const ReviewForm = ({ productId, onReviewSubmitted, hasUserReviewed }) => { // A
     const handleSubmitReview = async (event) => {
         event.preventDefault();
 
-        // **Crucially, check here again before making the API call**
         if (!isAuthenticated) {
             console.log('User not authenticated. Cannot submit review.');
-            // showSnackbar('Please log in to submit a review.', 'info');
-            return; // Stop submission if not authenticated
+            return; 
         }
 
         if (hasUserReviewed) {
             console.log('User has already reviewed this product. Submission blocked.');
-            // showSnackbar('You have already reviewed this product.', 'warning');
-            return; // **Stop submission if user has already reviewed**
+            return; 
         }
 
 
@@ -80,13 +72,10 @@ const ReviewForm = ({ productId, onReviewSubmitted, hasUserReviewed }) => { // A
                 onReviewSubmitted(); // Trigger review refetch in parent
             }
 
-            // showSnackbar('Review submitted successfully!', 'success');
-
         } catch (err) {
             console.error('Error submitting review:', err);
             const errorMessage = err.response?.data?.message || err.message || 'Failed to submit review. Please try again.';
             setSubmissionError(errorMessage);
-            // showSnackbar(errorMessage, 'error');
         } finally {
             setIsSubmitting(false);
         }
@@ -104,7 +93,6 @@ const ReviewForm = ({ productId, onReviewSubmitted, hasUserReviewed }) => { // A
         );
     }
 
-    // If authenticated AND user has already reviewed, show a message instead of the form
     if (hasUserReviewed) {
         return (
             <Box sx={{ mt: 2, p: 2, backgroundColor: '#1e1e1e', borderRadius: 2, textAlign: 'center' }}>
@@ -115,7 +103,7 @@ const ReviewForm = ({ productId, onReviewSubmitted, hasUserReviewed }) => { // A
     }
 
 
-    // If authenticated and has NOT reviewed, render the form
+  
     return (
         <Box sx={{ mt: 2, p: 2, backgroundColor: '#1e1e1e', borderRadius: 2 }}>
             <Typography variant="h6" gutterBottom sx={{ color: '#ffffff' }}>Write a Review</Typography>
@@ -180,7 +168,6 @@ const ReviewForm = ({ productId, onReviewSubmitted, hasUserReviewed }) => { // A
                     type="submit"
                     variant="contained"
                     color="primary"
-                    // Disable if submitting, comment empty, or rate is 0 (hasUserReviewed check is now handled by conditional rendering)
                     disabled={isSubmitting || !comment.trim() || rate === 0}
                     sx={{
                         backgroundColor: '#7e57c2',

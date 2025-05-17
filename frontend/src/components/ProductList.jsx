@@ -1,14 +1,9 @@
-// gamedrop-frontend/src/components/ReviewList.jsx
 import React from 'react';
-// Import necessary Material UI components for both ReviewList and ReviewItem
 import { Box, Typography, Divider } from '@mui/material';
-// Optional: Import Rating if you are using it for reviews
 import Rating from '@mui/material/Rating';
 
 
-// Component to display a single review (defined within this file)
 const ReviewItem = ({ review }) => {
-    // Assuming your review object has fields like 'rate', 'comment', 'user', 'created_at'
     return (
         <Box sx={{ mb: 2, p: 2, backgroundColor: '#2a2a2a', borderRadius: 1 }}>
             {/* Display Username */}
@@ -66,5 +61,4 @@ const ReviewList = ({ reviews }) => {
     );
 };
 
-// Export ReviewList as the default export
 export default ReviewList;

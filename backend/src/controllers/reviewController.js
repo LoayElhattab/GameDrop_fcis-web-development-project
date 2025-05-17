@@ -5,7 +5,6 @@ async function createReview(req, res, next) {
     const { product_id, rating, comment } = req.body;
     const user_id = req.user.id;
 
-    // Validate input
     if (!product_id || !rating) {
       return res
         .status(400)
@@ -18,7 +17,6 @@ async function createReview(req, res, next) {
         .json({ error: "Rating must be an integer between 1 and 5" });
     }
 
-    // Check if the user has already reviewed this product
     const existingReview = await prisma.review.findFirst({
       where: { user_id, product_id: product_id },
     });
@@ -29,13 +27,21 @@ async function createReview(req, res, next) {
         .json({ error: "You have already reviewed this product" });
     }
 
-    // Create the review
     const review = await prisma.review.create({
       data: {
         user_id,
-        product_id:product_id,
+        product_id: product_id,
         rating,
         comment,
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            username: true,
+            email: true,
+          },
+        },
       },
     });
 
@@ -51,10 +57,21 @@ async function getReviewsForProduct(req, res, next) {
 
     const reviews = await prisma.review.findMany({
       where: { product_id: productId },
+      include: {
+        user: {
+          select: {
+            id: true,
+            username: true,
+            email: true,
+          },
+        },
+      },
     });
-  if (reviews.length === 0) {
+
+    if (reviews.length === 0) {
       return res.status(200).json({ message: "No reviews for this product yet" });
     }
+
     res.status(200).json(reviews);
   } catch (error) {
     next(error);

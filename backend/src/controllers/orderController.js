@@ -1,11 +1,4 @@
-// backend/src/controllers/orderController.js
-const prisma = require('../config/db'); // Import Prisma Client
-
-/**
- * Creates an order from the user's current cart.
- * Requires shipping details in the request body.
- * Assumes req.user is populated by auth middleware.
- */
+const prisma = require('../config/db'); 
 const createOrder = async (req, res, next) => {
     try {
         const user_id= req.user.id;
@@ -161,10 +154,6 @@ const createOrder = async (req, res, next) => {
     }
 };
 
-/**
- * Gets all orders for the authenticated user.
- * Assumes req.user is populated by auth middleware.
- */
 const getUserOrders = async (req, res, next) => {
     try {
         const user_id= req.user.id;
@@ -193,10 +182,6 @@ const getUserOrders = async (req, res, next) => {
     }
 };
 
-/**
- * Gets details for a single order belonging to the authenticated user.
- * Assumes req.user is populated by auth middleware.
- */
 const getSingleOrder = async (req, res, next) => {
     try {
         const user_id= req.user.id;
@@ -212,15 +197,15 @@ const getSingleOrder = async (req, res, next) => {
         const order = await prisma.order.findUnique({
             where: {
                 id: orderId,
-                user_id: user_id, // Ensure the order belongs to the logged-in user
+                user_id: user_id, 
             },
             include: {
                 items: {
                     include: {
-                        product: true, // Include product details
+                        product: true, 
                     },
                 },
-                user: { // Include user details for confirmation (optional, but good for admin later)
+                user: {
                     select: {
                         id: true, username: true, email: true
                     }
@@ -237,52 +222,40 @@ const getSingleOrder = async (req, res, next) => {
         res.status(200).json(order);
 
     } catch (error) {
-        // Removed console.error("Error fetching single order:", error);
         next(error);
     }
 };
 
-/**
- * Gets all orders (Admin view).
- * Requires ADMIN authorization.
- * Assumes req.user is populated by auth middleware.
- */
+
 const getAllOrders = async (req, res, next) => {
     try {
-        // Prisma query to find all orders
         const orders = await prisma.order.findMany({
             include: {
-                user: { // Include user details for admin view
+                user: { 
                     select: {
                         id: true, username: true, email: true
                     }
                 },
-                 items: { // Include items for quick overview if needed
+                 items: { 
                      include: {
                          product: {
-                            select: { id: true, title: true } // Just product title/id in item list for overview
+                            select: { id: true, title: true } 
                          }
                      }
                  }
             },
             orderBy: {
-                created_at: 'desc', // Show most recent orders first
+                created_at: 'desc', 
             },
         });
 
         res.status(200).json(orders);
 
     } catch (error) {
-        // Removed console.error("Error fetching all orders (Admin):", error);
         next(error);
     }
 };
 
-/**
- * Gets details for a single order by ID (Admin view).
- * Requires ADMIN authorization.
- * Assumes req.user is populated by auth middleware.
- */
 const getSingleOrderAdmin = async (req, res, next) => {
     try {
         const { orderId } = req.params;
@@ -293,8 +266,6 @@ const getSingleOrderAdmin = async (req, res, next) => {
              return next(error);
          }
 
-
-        // Prisma query to find a single order by ID
         const order = await prisma.order.findUnique({
             where: {
                 id: orderId,
@@ -302,10 +273,10 @@ const getSingleOrderAdmin = async (req, res, next) => {
             include: {
                 items: {
                     include: {
-                        product: true, // Include full product details for admin detail view
+                        product: true, 
                     },
                 },
-                 user: { // Include full user details for admin view
+                 user: { 
                      select: {
                          id: true, username: true, email: true, role: true
                      }
@@ -322,19 +293,13 @@ const getSingleOrderAdmin = async (req, res, next) => {
         res.status(200).json(order);
 
     } catch (error) {
-        // Removed console.error("Error fetching single order (Admin):", error);
         next(error);
     }
 };
 
-/**
- * Updates the status of an order by ID (Admin view).
- * Requires ADMIN authorization.
- * Assumes req.user is populated by auth middleware.
- */
 const updateOrderStatus = async (req, res, next) => {
     try {
-        const user_id= req.user.id; // Assuming admin also has a user ID structure
+        const user_id= req.user.id; 
         const { orderId } = req.params;
         const { status } = req.body;
 
@@ -349,18 +314,14 @@ const updateOrderStatus = async (req, res, next) => {
              return next(error);
          }
 
-        // Validate that the status is one of the allowed enum values
-        // You might need to fetch the enum values from your schema or define them here
-        const validStatuses = ['PENDING', 'PROCESSING', 'SHIPPED', 'DELIVERED', 'CANCELLED']; // Match your Prisma enum
-        const newStatus = status.toUpperCase(); // Ensure consistency
+        const validStatuses = [, 'PROCESSING', 'SHIPPED', 'CANCELLED'];
+        const newStatus = status.toUpperCase(); 
 
         if (!validStatuses.includes(newStatus)) {
             const error = new Error(`Invalid status "${status}". Allowed statuses are: ${validStatuses.join(', ')}`);
             error.statusCode = 400;
             return next(error);
         }
-
-        // Fetch the current order before updating to potentially handle stock logic
         const currentOrder = await prisma.order.findUnique({
             where: { id: orderId },
             include: { items: true }
@@ -374,8 +335,6 @@ const updateOrderStatus = async (req, res, next) => {
 
         const oldStatus = currentOrder.status;
 
-        // --- Stock Logic based on Status Change (as per FRD/TRD notes) ---
-        // If status changes TO CANCELLED from a non-cancelled state, return stock
         if (newStatus === 'CANCELLED' && oldStatus !== 'CANCELLED') {
             await prisma.$transaction(async (tx) => {
                 // Update the order status first
@@ -383,8 +342,6 @@ const updateOrderStatus = async (req, res, next) => {
                      where: { id: orderId },
                      data: { status: newStatus },
                  });
-
-                // Return stock for each item in the order
                 for (const item of currentOrder.items) {
                     await tx.product.update({
                         where: { id: item.product_id },
@@ -396,25 +353,18 @@ const updateOrderStatus = async (req, res, next) => {
                     });
                 }
             });
-
-             // Fetch the updated order to return in the response
-             // This fetch needs to be inside the transaction to ensure you're reading
-             // the state that will be committed.
              const updatedOrder = await prisma.order.findUnique({
                  where: { id: orderId },
                  include: { items: { include: { product: true } }, user: { select: { id: true, username: true, email: true, role: true } } }
              });
 
-             return res.status(200).json(updatedOrder); // Important: Return here after transaction
+             return res.status(200).json(updatedOrder); 
 
         }
-        // Add other stock logic if needed (e.g., reducing stock if changing *from* cancelled to processing - less common)
-
-        // --- Standard Status Update (if no stock change required) ---
         const updatedOrder = await prisma.order.update({
             where: { id: orderId },
             data: { status: newStatus },
-             include: { // Include details for the response
+             include: { 
                  items: {
                      include: {
                          product: true,
@@ -431,12 +381,10 @@ const updateOrderStatus = async (req, res, next) => {
         res.status(200).json(updatedOrder);
 
     } catch (error) {
-        // Removed console.error("Error updating order status (Admin):", error);
         next(error);
     }
 };
 
-// Export the customer-facing and admin functions
 module.exports = {
     createOrder,
     getUserOrders,

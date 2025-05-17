@@ -1,14 +1,7 @@
-// backend/src/controllers/adminController.js
-const prisma = require('../config/db'); // Import Prisma Client
+const prisma = require('../config/db'); 
 
-/**
- * Gets a list of all users (Admin view).
- * Requires ADMIN authorization.
- * Assumes req.user is populated by auth middleware.
- */
 const getAllUsers = async (req, res, next) => {
     try {
-        // Prisma query to find all users, explicitly selecting fields to exØ´clude password hash
         const users = await prisma.user.findMany({
             select: {
                 id: true,
@@ -17,7 +10,6 @@ const getAllUsers = async (req, res, next) => {
                 role: true,
                 created_at: true,
                 updated_at: true,
-                // Optionally include counts of related data if useful for admin overview
                 _count: {
                     select: {
                         orders: true,
@@ -26,7 +18,7 @@ const getAllUsers = async (req, res, next) => {
                 },
             },
             orderBy: {
-                created_at: 'asc', // Order users by creation date
+                created_at: 'asc', 
             },
         });
 
@@ -36,12 +28,6 @@ const getAllUsers = async (req, res, next) => {
         next(error);
     }
 };
-
-/**
- * Gets details for a single user by ID (Admin view).
- * Requires ADMIN authorization.
- * Assumes req.user is populated by auth middleware.
- */
 const getUserById = async (req, res, next) => {
     try {
         const { userId } = req.params;
@@ -52,8 +38,6 @@ const getUserById = async (req, res, next) => {
              return next(error);
          }
 
-
-        // Prisma query to find a single user by ID, excluding password hash
         const user = await prisma.user.findUnique({
             where: {
                 id: userId,
@@ -65,16 +49,15 @@ const getUserById = async (req, res, next) => {
                 role: true,
                 created_at: true,
                 updated_at: true,
-                // Include related data that might be relevant for admin detail view
-                orders: { // Include a summary of recent orders
+                orders: { 
                     select: { id: true, total_amount: true, status: true, created_at: true },
                     orderBy: { created_at: 'desc' },
-                    take: 5 // Limit to recent orders
+                    take: 5 
                 },
-                 reviews: { // Include a summary of recent reviews
+                 reviews: { 
                      select: { id: true, rating: true, comment: true, created_at: true, product_id: true },
                      orderBy: { created_at: 'desc' },
-                     take: 5 // Limit to recent reviews
+                     take: 5 
                  }
             },
         });
@@ -92,15 +75,10 @@ const getUserById = async (req, res, next) => {
     }
 };
 
-/**
- * Updates a user's role by ID (Admin view).
- * Requires ADMIN authorization.
- * Assumes req.user is populated by auth middleware.
- */
 const updateUserRole = async (req, res, next) => {
     const { userId } = req.params;
     try {
-        const { role } = req.body; // Expected role: 'CUSTOMER' or 'ADMIN'
+        const { role } = req.body; // 
 
          if (!userId) {
              const error = new Error('User ID is required in parameters.');
@@ -114,8 +92,7 @@ const updateUserRole = async (req, res, next) => {
          }
 
 
-        // Validate that the role is one of the allowed enum values
-        const validRoles = ['CUSTOMER', 'ADMIN']; // Match your Prisma enum
+        const validRoles = ['CUSTOMER', 'ADMIN']; 
 
         if (!validRoles.includes(role.toUpperCase())) {
             const error = new Error(`Invalid role "${role}". Allowed roles are: ${validRoles.join(', ')}`);
@@ -123,24 +100,21 @@ const updateUserRole = async (req, res, next) => {
             return next(error);
         }
 
-         // Prevent changing the role of the currently logged-in admin user via this endpoint if desired
-         // (Optional security check)
          if (req.user.id === userId) {
              const error = new Error('Cannot change your own role via this endpoint.');
-             error.statusCode = 403; // Forbidden
+             error.statusCode = 403; 
              return next(error);
          }
 
 
-        // Prisma query to find and update the user's role
         const updatedUser = await prisma.user.update({
             where: {
                 id: userId,
             },
             data: {
-                role: role.toUpperCase(), // Store role in uppercase as per enum convention
+                role: role.toUpperCase(), 
             },
-            select: { // Select fields to return, exclude password hash
+            select: { 
                  id: true,
                  username: true,
                  email: true,
@@ -153,21 +127,14 @@ const updateUserRole = async (req, res, next) => {
         res.status(200).json(updatedUser);
 
     } catch (error) {
-        // Check if the error is a "not found" error from Prisma if needed
-        if (error.code === 'P2025') { // Prisma error code for record not found
+        if (error.code === 'P2025') { 
              const notFoundError = new Error(`User with ID ${userId} not found.`);
              notFoundError.statusCode = 404;
              return next(notFoundError);
          }
-        next(error); // Pass other errors to the general error handler
+        next(error); 
     }
 };
-
-/**
- * Deletes a user by ID (Admin view).
- * Requires ADMIN authorization.
- * Assumes req.user is populated by auth middleware.
- */
 const deleteUser = async (req, res, next) => {
     const { userId } = req.params;
     try {
@@ -176,24 +143,16 @@ const deleteUser = async (req, res, next) => {
              error.statusCode = 400;
              return next(error);
          }
-
-         // Prevent deleting the currently logged-in admin user via this endpoint
-         // (Optional security check)
          if (req.user.id === userId) {
              const error = new Error('Cannot delete your own user account via this endpoint.');
              error.statusCode = 403; // Forbidden
              return next(error);
          }
-
-
-        // Prisma query to find and delete the user
-        // Be cautious: this will trigger cascading deletes if configured in schema.prisma
-        // (e.g., deleting user might delete their cart, orders, reviews depending on schema)
         const deletedUser = await prisma.user.delete({
             where: {
                 id: userId,
             },
-            select: { // Return confirmation fields
+            select: { 
                  id: true, username: true, email: true
              }
         });
@@ -201,18 +160,16 @@ const deleteUser = async (req, res, next) => {
         res.status(200).json({ message: `User with ID ${userId} deleted successfully.`, user: deletedUser });
 
     } catch (error) {
-        // Check if the error is a "not found" error from Prisma
-         if (error.code === 'P2025') { // Prisma error code for record not found
+         if (error.code === 'P2025') { 
              const notFoundError = new Error(`User with ID ${userId} not found.`);
              notFoundError.statusCode = 404;
              return next(notFoundError);
          }
-        next(error); // Pass other errors to the general error handler
+        next(error);
     }
 };
 const getDashboardMetrics = async (req, res, next) => {
     try {
-        // Fetch raw data for debugging
         const allProducts = await prisma.product.findMany({
             where: {
                 stock_quantity: { gt: 0 },
@@ -227,28 +184,22 @@ const getDashboardMetrics = async (req, res, next) => {
                 status: 'COMPLETED',
             },
         });
-
-        // Run Prisma queries concurrently for performance
         const [revenueData, productCount, userCount, orderCount] = await Promise.all([
-            // Calculate total revenue from completed orders
             prisma.order.aggregate({
                 _sum: {
                     total_amount: true,
                 },
                 where: {
-                    status: 'COMPLETED', // Assuming 'COMPLETED' status for finalized orders
+                    status: 'COMPLETED', 
                 },
             }),
-            // Count products where stock_quantity > 0 and not deleted
             prisma.product.count({
                 where: {
                     stock_quantity: { gt: 0 },
                     is_deleted: false,
                 },
             }),
-            // Count all users
             prisma.user.count(),
-            // Count total orders
             prisma.order.count(),
         ]);
 
@@ -260,9 +211,8 @@ const getDashboardMetrics = async (req, res, next) => {
         console.log('User Count:', userCount);
         console.log('Order Count:', orderCount);
 
-        // Structure the response
         const metrics = {
-            totalRevenue: revenueData._sum.total_amount || 0, // Handle null case
+            totalRevenue: revenueData._sum.total_amount || 0, 
             totalProducts: productCount,
             activeUsers: userCount,
             totalOrders: orderCount,
@@ -275,8 +225,6 @@ const getDashboardMetrics = async (req, res, next) => {
         next(error);
     }
 };
-
-// Export all admin controller functions
 module.exports = {
     getAllUsers,
     getUserById,

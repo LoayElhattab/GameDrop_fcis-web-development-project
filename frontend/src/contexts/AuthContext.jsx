@@ -1,13 +1,8 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import apiClient from '../api';
 
-// Create the Auth Context
 const AuthContext = createContext(null);
 
-/**
- * Provides authentication state and functions to the application.
- * Manages user data, token, and loading state.
- */
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(() => {
     try {

@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import {
-    Box, Typography, Paper, TextField, Button, CircularProgress, Alert, Grid, MenuItem, FormControl, InputLabel, Select, Dialog, DialogTitle, DialogContent, DialogActions
+    Box, Typography, Paper, TextField, Button, CircularProgress, Alert, Grid, MenuItem, FormControl, InputLabel, Select, Dialog, DialogTitle, DialogContent, DialogActions, Snackbar
 } from '@mui/material';
+import MuiAlert from '@mui/material/Alert';
 import { useFormik } from 'formik';
 import * as yup from 'yup';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -20,13 +21,6 @@ const validationSchema = yup.object({
     release_date: yup.date('Enter release date').nullable().typeError('Enter a valid date'),
 });
 
-/**
- * Admin Product Form Page Component (Add/Edit).
- * Displays a form for creating or updating product details.
- * Uses Formik for form handling and validation.
- * Styled using Material UI.
- * Can be used as a standalone page (for Edit) or within a Dialog (for Add).
- */
 const AdminProductFormPage = ({ isEditMode = false, productId = null, onSubmissionSuccess }) => {
     const navigate = useNavigate();
     const params = useParams();
@@ -48,8 +42,10 @@ const AdminProductFormPage = ({ isEditMode = false, productId = null, onSubmissi
         cover_image_url: '',
         release_date: '',
     });
-    const [confirmDialogOpen, setConfirmDialogOpen] = useState(false); // State for confirmation dialog
-    const [valuesToSubmit, setValuesToSubmit] = useState(null); // Store form values for confirmation
+    const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
+    const [valuesToSubmit, setValuesToSubmit] = useState(null);
+    const [snackbarOpen, setSnackbarOpen] = useState(false); // State for snackbar
+    const [snackbarMessage, setSnackbarMessage] = useState(''); // Message for snackbar
 
     useEffect(() => {
         const fetchProduct = async () => {
@@ -103,8 +99,8 @@ const AdminProductFormPage = ({ isEditMode = false, productId = null, onSubmissi
         validationSchema: validationSchema,
         enableReinitialize: true,
         onSubmit: (values) => {
-            setValuesToSubmit(values); // Store values for confirmation
-            setConfirmDialogOpen(true); // Open confirmation dialog
+            setValuesToSubmit(values);
+            setConfirmDialogOpen(true);
         },
     });
 
@@ -117,17 +113,14 @@ const AdminProductFormPage = ({ isEditMode = false, productId = null, onSubmissi
             if (actualIsEditMode) {
                 const response = await apiClient.put(`./products/${actualProductId}`, valuesToSubmit);
                 console.log('Product updated successfully:', response.data);
-                if (!isEditMode && !onSubmissionSuccess) {
-                    navigate('/admin/products');
-                }
+                setSnackbarMessage('Updated successfully');
             } else {
                 const response = await apiClient.post('./products/createProduct', valuesToSubmit);
                 console.log('Product added successfully:', response.data);
-                if (onSubmissionSuccess) {
-                    onSubmissionSuccess();
-                    formik.resetForm();
-                }
+                setSnackbarMessage('Created successfully');
+                formik.resetForm();
             }
+            setSnackbarOpen(true); // Show snackbar
         } catch (err) {
             console.error('Failed to save product:', err);
             setError('Failed to save product. Please check your input and try again.');
@@ -139,6 +132,17 @@ const AdminProductFormPage = ({ isEditMode = false, productId = null, onSubmissi
     const handleCancelConfirm = () => {
         setConfirmDialogOpen(false);
         setValuesToSubmit(null);
+    };
+
+    const handleCloseSnackbar = (event, reason) => {
+        if (reason === 'clickaway') return;
+        setSnackbarOpen(false);
+        // Redirect or close dialog after snackbar closes
+        if (onSubmissionSuccess) {
+            onSubmissionSuccess();
+        } else {
+            navigate('/admin/products');
+        }
     };
 
     const paperStyles = {
@@ -414,6 +418,23 @@ const AdminProductFormPage = ({ isEditMode = false, productId = null, onSubmissi
                     </Button>
                 </DialogActions>
             </Dialog>
+
+            <Snackbar
+                open={snackbarOpen}
+                autoHideDuration={1000}
+                onClose={handleCloseSnackbar}
+                anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+            >
+                <MuiAlert
+                    elevation={6}
+                    variant="filled"
+                    onClose={handleCloseSnackbar}
+                    severity="success"
+                    sx={{ width: '100%' }}
+                >
+                    {snackbarMessage}
+                </MuiAlert>
+            </Snackbar>
         </Box>
     );
 };

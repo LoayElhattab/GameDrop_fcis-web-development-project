@@ -15,22 +15,26 @@ import {
   CircularProgress,
   Alert,
   Avatar,
+  Modal,
+  Divider,
+  IconButton
 } from '@mui/material';
+import CloseIcon from '@mui/icons-material/Close';
 import { useNavigate } from 'react-router-dom';
 import apiClient from '../api/apiClient';
+import { useAuth } from '../contexts/AuthContext';
 
-/**
- * My Account Page Component.
- * Displays user profile and order history with a tabbed interface.
- * Styled using Material UI to match a dark, modern aesthetic.
- */
 const MyAccount = () => {
-  const [activeTab, setActiveTab] = useState(0); // 0 for Profile, 1 for Order History
+  const [activeTab, setActiveTab] = useState(0); 
   const [profileData, setProfileData] = useState(null);
   const [orderHistory, setOrderHistory] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [selectedOrder, setSelectedOrder] = useState(null);
+  const [modalError, setModalError] = useState(null);
   const navigate = useNavigate();
+  const { user, token } = useAuth(); 
 
   useEffect(() => {
     const fetchData = async () => {
@@ -57,8 +61,29 @@ const MyAccount = () => {
     setActiveTab(newValue);
   };
 
-  const handleViewDetails = (orderId) => {
-    navigate(`/order/${orderId}`);
+  const handleViewDetails = async (orderId) => {
+    try {
+      console.log('Fetching order details for orderId:', orderId);
+      console.log('Current token:', token); // Log token for debugging
+      setModalError(null);
+      setSelectedOrder(null);
+      setModalOpen(true);
+
+      const response = await apiClient.get(`/orders/myOrder/${orderId}`, {
+        headers: { Authorization: `Bearer ${token}` }, // Ensure token is sent
+      });
+      console.log('Order details response:', response.data);
+      setSelectedOrder(response.data);
+    } catch (err) {
+      console.error('Failed to fetch order details:', err);
+      setModalError(`Failed to load order details. Error: ${err.message} (Status: ${err.response?.status})`);
+    }
+  };
+
+  const handleCloseModal = () => {
+    setModalOpen(false);
+    setSelectedOrder(null);
+    setModalError(null);
   };
 
   const formatDate = (dateString) => {
@@ -73,7 +98,21 @@ const MyAccount = () => {
     }).replace(',', ' at');
   };
 
-  // Check if the user is an admin to hide Order History tab
+  const modalStyles = {
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    transform: 'translate(-50%, -50%)',
+    width: { xs: '90%', sm: 500 },
+    bgcolor: '#1E1E2F',
+    boxShadow: 24,
+    p: 4,
+    borderRadius: 2,
+    maxHeight: '80vh',
+    overflowY: 'auto',
+    color: 'text.primary',
+  };
+
   const isAdmin = profileData?.role === 'ADMIN';
 
   return (
@@ -89,7 +128,6 @@ const MyAccount = () => {
             {!isAdmin && (
               <Tab label="Order History" sx={{ color: 'text.primary', '&.Mui-selected': { color: '#AB47BC' } }} />
             )}
-            <Tab label="Addresses" disabled sx={{ color: 'text.primary' }} />
           </Tabs>
         </Box>
 
@@ -194,6 +232,90 @@ const MyAccount = () => {
           </Typography>
         )}
       </Paper>
+
+      <Modal
+        open={modalOpen}
+        onClose={handleCloseModal}
+        aria-labelledby="order-details-modal"
+        aria-describedby="order-details-description"
+      >
+        <Box sx={modalStyles}>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+            <Typography id="order-details-modal" variant="h6" component="h2">
+              Order Details
+            </Typography>
+            <IconButton onClick={handleCloseModal}>
+              <CloseIcon sx={{ color: 'text.primary' }} />
+            </IconButton>
+          </Box>
+
+          {modalError ? (
+            <Alert severity="error" sx={{ mb: 2 }}>
+              {modalError}
+            </Alert>
+          ) : !selectedOrder ? (
+            <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
+              <CircularProgress color="primary" />
+            </Box>
+          ) : (
+            <Box>
+              <Typography variant="body1" sx={{ mb: 1 }}>
+                <strong>Order ID:</strong> {selectedOrder.id}
+              </Typography>
+              <Typography variant="body1" sx={{ mb: 1 }}>
+                <strong>Customer:</strong> {selectedOrder.user?.username ?? 'Unknown User'}
+              </Typography>
+              <Typography variant="body1" sx={{ mb: 1 }}>
+                <strong>Date:</strong> {selectedOrder.created_at ? new Date(selectedOrder.created_at).toLocaleString() : 'N/A'}
+              </Typography>
+              <Typography variant="body1" sx={{ mb: 1 }}>
+                <strong>Total Amount:</strong> ${parseFloat(selectedOrder.total_amount)?.toFixed(2) ?? '0.00'}
+              </Typography>
+              <Typography variant="body1" sx={{ mb: 1 }}>
+                <strong>Status:</strong> {selectedOrder.status ?? 'UNKNOWN'}
+              </Typography>
+
+              <Divider sx={{ my: 2, backgroundColor: '#333' }} />
+
+              <Typography variant="h6" sx={{ mb: 1 }}>
+                Shipping Address
+              </Typography>
+              <Typography variant="body1" sx={{ mb: 1 }}>
+                {selectedOrder.shipping_address_line1 ? selectedOrder.shipping_address_line1 : 'N/A'}
+              </Typography>
+              {selectedOrder.shipping_address_line2 && (
+                <Typography variant="body1" sx={{ mb: 1 }}>
+                  {selectedOrder.shipping_address_line2}
+                </Typography>
+              )}
+              <Typography variant="body1" sx={{ mb: 1 }}>
+                {selectedOrder.shipping_city ? selectedOrder.shipping_city : 'N/A'},{' '}
+                {selectedOrder.shipping_postal_code ? selectedOrder.shipping_postal_code : 'N/A'},{' '}
+                {selectedOrder.shipping_country ? selectedOrder.shipping_country : 'N/A'}
+              </Typography>
+
+              <Divider sx={{ my: 2, backgroundColor: '#333' }} />
+
+              <Typography variant="h6" sx={{ mb: 1 }}>
+                Items
+              </Typography>
+              {selectedOrder.items && selectedOrder.items.length > 0 ? (
+                selectedOrder.items.map((item, index) => (
+                  <Box key={index} sx={{ mb: 1, pl: 2 }}>
+                    <Typography variant="body2">
+                      - {item.product?.title ?? 'Unknown Product'} (Qty: {item.quantity}, Price: ${isNaN(parseFloat(item.price_at_purchase)) ? '0.00' : parseFloat(item.price_at_purchase).toFixed(2)})
+                    </Typography>
+                  </Box>
+                ))
+              ) : (
+                <Typography variant="body2" color="text.secondary">
+                  No items found in this order.
+                </Typography>
+              )}
+            </Box>
+          )}
+        </Box>
+      </Modal>
     </Container>
   );
 };

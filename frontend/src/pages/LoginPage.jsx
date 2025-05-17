@@ -16,17 +16,11 @@ const validationSchema = yup.object({
     .required('Password is required'),
 });
 
-/**
- * Login page component.
- * Implements login form using Formik and usesAuth context.
- * Styles based on v0.dev prototype login page.
- */
 const LoginPage = () => {
   const navigate = useNavigate();
   const { login, isLoading, error, isAuthenticated, isAdmin } = useAuth();
   const [openSuccess, setOpenSuccess] = useState(false);
 
-  // Formik hook for form management
   const formik = useFormik({
     initialValues: {
       email: '',
@@ -159,7 +153,7 @@ const LoginPage = () => {
 
       <Snackbar
         open={openSuccess}
-        autoHideDuration={3000}
+        autoHideDuration={2000}
         onClose={() => setOpenSuccess(false)}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
       >

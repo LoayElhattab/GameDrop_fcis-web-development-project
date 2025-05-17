@@ -18,7 +18,6 @@ const platforms = [
 
 function HomePage() {
     const [featuredGames, setFeaturedGames] = useState([]);
-    const [specialDeals, setSpecialDeals] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const navigate = useNavigate();
@@ -30,18 +29,11 @@ function HomePage() {
                 const featuredResponse = await apiClient.get('/products/getProducts', {
                     params: {
                         isFeatured: true,
-                        limit: 3
+                        limit: 6
                     },
                     withCredentials: true
                 });
                 setFeaturedGames(featuredResponse.data.products || []);
-
-                const dealsResponse = await apiClient.get('/products/getProducts', {
-                    params: { hasDiscount: true, limit: 3 },
-                    withCredentials: true
-                });
-                setSpecialDeals(dealsResponse.data.products || []);
-
                 setLoading(false);
             } catch (err) {
                 setError(err);
@@ -99,7 +91,7 @@ function HomePage() {
                     </Box>
                     <Box sx={{ mt: 4 }}>
                         <Button
-                            onClick={() => navigate('/search-results')}
+                            onClick={() => navigate('/search-results?allGames=true')}
                             variant="contained"
                             color="primary"
                             size="large"
@@ -166,7 +158,7 @@ function HomePage() {
                                 }}
                             >
                                 <Button
-                                    onClick={() => navigate(`/search-results?platform=${encodeURIComponent(platform.name)}`)}
+                                    onClick={() => navigate(`/search-results?platform=${encodeURIComponent(platform.name)}&fromPlatform=true`)}
                                     sx={{ width: '100%', height: '100%', padding: 0 }}
                                 >
                                     <Card
@@ -303,81 +295,6 @@ function HomePage() {
                                 <Grid item xs={12}>
                                     <Typography sx={{ textAlign: 'center', color: '#bdbdbd' }}>
                                         No featured games found.
-                                    </Typography>
-                                </Grid>
-                            )}
-                        </Grid>
-                    </Box>
-                </Box>
-
-                {/* Special Deals Section */}
-                <Box
-                    sx={{
-                        mb: 8,
-                        display: 'flex',
-                        flexDirection: 'column',
-                        alignItems: 'center',
-                    }}
-                >
-                    <Typography
-                        variant="h4"
-                        component="h2"
-                        gutterBottom
-                        sx={{
-                            color: '#ffffff',
-                            fontWeight: 'bold',
-                            textAlign: 'center',
-                        }}
-                    >
-                        Special Deals
-                    </Typography>
-                    <Box
-                        sx={{
-                            background: 'linear-gradient(145deg, #0f0f0f, #1e1e1e)',
-                            borderRadius: 2,
-                            padding: 3,
-                            width: { xs: '100%', md: '90%' },
-                            maxWidth: 1200,
-                            boxShadow: '0 2px 10px rgba(0, 0, 0, 0.5)',
-                            overflow: 'hidden',
-                            position: 'relative',
-                            '&::before': {
-                                content: '""',
-                                position: 'absolute',
-                                top: 0,
-                                left: 0,
-                                width: '100%',
-                                height: '100%',
-                                background: 'radial-gradient(circle at center, rgba(255, 255, 255, 0.01), transparent 70%)',
-                                zIndex: 0,
-                            },
-                        }}
-                    >
-                        <Grid container spacing={3} justifyContent="center">
-                            {specialDeals.map((product, index) => (
-                                <Grid
-                                    item
-                                    xs={12}
-                                    sm={6}
-                                    md={3}
-                                    key={product.id}
-                                    sx={{
-                                        display: 'flex',
-                                        animation: `fadeIn 0.6s ease-in-out ${index * 0.2}s forwards`,
-                                        opacity: 0,
-                                        '@keyframes fadeIn': {
-                                            '0%': { opacity: 0, transform: 'translateY(15px)' },
-                                            '100%': { opacity: 1, transform: 'translateY(0)' },
-                                        },
-                                    }}
-                                >
-                                    <ProductCard product={product} isAdmin={isAdmin} />
-                                </Grid>
-                            ))}
-                            {specialDeals.length === 0 && !loading && (
-                                <Grid item xs={12}>
-                                    <Typography sx={{ textAlign: 'center', color: '#bdbdbd' }}>
-                                        No special deals found.
                                     </Typography>
                                 </Grid>
                             )}

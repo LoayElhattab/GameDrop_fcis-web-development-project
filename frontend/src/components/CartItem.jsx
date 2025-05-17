@@ -7,63 +7,47 @@ import {
   Button,
   Divider,
   Paper,
-  Grid // Using Grid for internal layout of the item
+  Grid 
 } from '@mui/material';
 import RemoveIcon from '@mui/icons-material/Remove';
 import AddIcon from '@mui/icons-material/Add';
-import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline'; // Using a delete icon for remove button
-import { useCart } from '../contexts/CartContext'; // Import the cart context hook
+import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline'; 
+import { useCart } from '../contexts/CartContext'; 
 
-// CartItem component displays details of a single product in the cart
 const CartItem = ({ item }) => {
-  // Access cart context functions to update and remove items
+ 
   const { updateItemQuantity, removeItem, isLoading } = useCart();
 
-  // Handle quantity change from the input field (if we were using an input)
-  // For this task, we'll use buttons based on the prototype
-  // const handleQuantityChange = (event) => {
-  //   const newQuantity = parseInt(event.target.value, 10);
-  //   if (!isNaN(newQuantity) && newQuantity > 0) {
-  //     updateItemQuantity(item.product.id, newQuantity);
-  //   }
-  // };
 
-  // Handle incrementing quantity
+
   const handleIncrementQuantity = () => {
-    // Prevent updating if loading or quantity is already very high (optional stock check later)
     if (!isLoading) {
       updateItemQuantity(item.product.id, item.quantity + 1);
     }
   };
 
-  // Handle decrementing quantity
   const handleDecrementQuantity = () => {
-    // Only decrement if quantity is greater than 1
     if (!isLoading && item.quantity > 1) {
       updateItemQuantity(item.product.id, item.quantity - 1);
     } else if (!isLoading && item.quantity === 1) {
-      // If quantity is 1, decrementing should remove the item
       removeItem(item.product.id);
     }
   };
 
-  // Handle removing the item
   const handleRemoveItem = () => {
     if (!isLoading) {
       removeItem(item.product.id);
     }
   };
 
-  // Calculate the subtotal for this item
   const itemSubtotal = (item.product?.price || 0) * item.quantity;
 
   return (
-    // Use Paper for a card-like appearance, matching the prototype
     <Paper
       sx={{
         p: 2, // Padding
         mb: 2, // Margin bottom for spacing between items
-        backgroundColor: 'background.paper', // Dark background for the item card
+        backgroundColor: 'background.paper', 
         color: 'text.primary', // Primary text color
         display: 'flex', // Use flexbox for layout
         alignItems: 'center', // Center items vertically
@@ -76,13 +60,13 @@ const CartItem = ({ item }) => {
       {/* Placeholder for product image */}
       <Box
         sx={{
-          width: 80, // Fixed width for the image container
-          height: 100, // Fixed height
-          backgroundColor: 'grey.800', // Dark grey placeholder background
+          width: 80, 
+          height: 100, 
+          backgroundColor: 'grey.800',
           display: 'flex',
           justifyContent: 'center',
           alignItems: 'center',
-          flexShrink: 0, // Prevent shrinking
+          flexShrink: 0, 
         }}
       >
         <Typography variant="caption" color="text.secondary">

@@ -8,11 +8,6 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import apiClient from '../../api';
 import { useAuth } from '../../contexts/AuthContext';
 
-/**
- * Admin Users Management Page Component.
- * Displays a table of users for administration.
- * Styled using Material UI.
- */
 const AdminUsersPage = () => {
     const { user } = useAuth();
 
@@ -165,7 +160,6 @@ const AdminUsersPage = () => {
                                     <TableCell sx={tableHeaderCellStyles}>Role</TableCell>
                                     <TableCell sx={tableHeaderCellStyles}>Orders</TableCell>
                                     <TableCell sx={tableHeaderCellStyles}>Joined</TableCell>
-                                    <TableCell sx={tableHeaderCellStyles}>Status</TableCell>
                                     <TableCell sx={tableHeaderCellStyles} align="center">Actions</TableCell>
                                 </TableRow>
                             </TableHead>
@@ -180,7 +174,6 @@ const AdminUsersPage = () => {
                                         <TableCell sx={tableCellStyles}>
                                             {userItem.created_at ? new Date(userItem.created_at).toLocaleDateString() : 'N/A'}
                                         </TableCell>
-                                        <TableCell sx={tableCellStyles}>{userItem.status || 'N/A'}</TableCell>
                                         <TableCell sx={tableCellStyles} align="center">
                                             {userItem.id !== user?.id && (
                                                 <>

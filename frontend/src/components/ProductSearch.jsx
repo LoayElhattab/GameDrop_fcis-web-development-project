@@ -1,16 +1,7 @@
-// gamedrop-frontend/src/components/ProductSearch.jsx
 import React, { useState } from 'react';
 import { TextField, InputAdornment, IconButton, Box } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 
-/**
- * A search input component for products.
- * Styled to match the prototype's dark theme.
- *
- * @param {string} searchTerm - The current value of the search input.
- * @param {function} onSearchChange - Function to call when the search input value changes.
- * @param {function} onSearchSubmit - Optional function to call when the user submits the search (e.g., presses Enter or clicks search icon).
- */
 function ProductSearch({ searchTerm, onSearchChange, onSearchSubmit }) {
 
     const handleKeyDown = (event) => {
@@ -34,7 +25,6 @@ function ProductSearch({ searchTerm, onSearchChange, onSearchSubmit }) {
                             <SearchIcon sx={{ color: '#bdbdbd' }} /> {/* Grey icon */}
                         </InputAdornment>
                     ),
-                    // Optional: Add an end adornment icon button if onSearchSubmit is provided
                     endAdornment: onSearchSubmit && (
                         <InputAdornment position="end">
                             <IconButton
@@ -67,7 +57,6 @@ function ProductSearch({ searchTerm, onSearchChange, onSearchSubmit }) {
                     },
                 }}
                 sx={{
-                    // Additional styling for the TextField wrapper if needed
                 }}
             />
         </Box>

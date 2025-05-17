@@ -28,11 +28,6 @@ const validationSchema = yup.object({
      .required('You must accept the terms and privacy policy'),
 });
 
-/**
- * Register page component.
- * Implements registration form using Formik and usesAuth context.
- * Styles based on v0.dev prototype register page.
- */
 const RegisterPage = () => {
   const navigate = useNavigate();
   const { register, isLoading, error } = useAuth();
@@ -92,16 +87,22 @@ const RegisterPage = () => {
   const termsStyles = {
     mt: 1,
     mb: 2,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
     '& .MuiFormControlLabel-label': {
       fontSize: '0.875rem',
-      color: (theme) => theme.palette.text.secondary,
-    }
+      color: '#757575',
+    },
+    '& .MuiCheckbox-root': {
+      padding: '0 8px 0 0',
+    },
   };
 
   const linkStyles = {
     mt: 2,
     display: 'block',
-    color: (theme) => theme.palette.primary.main,
+    color: '#AB47BC',
     textDecoration: 'none',
     '&:hover': {
       textDecoration: 'underline',
@@ -284,7 +285,7 @@ const RegisterPage = () => {
       {/* Success Snackbar */}
       <Snackbar
         open={openSuccess}
-        autoHideDuration={3000}
+        autoHideDuration={2000}
         onClose={() => setOpenSuccess(false)}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
       >

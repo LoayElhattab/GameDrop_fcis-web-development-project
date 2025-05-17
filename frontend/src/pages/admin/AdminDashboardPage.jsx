@@ -1,14 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Typography, Grid, Paper, Card, CardContent, CardActionArea, CircularProgress, Alert } from '@mui/material';
+import { Box, Typography, Card, CardContent, CardActionArea, CircularProgress, Alert } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import apiClient from '../../api';
 import { useAuth } from '../../contexts/AuthContext';
+import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
+import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
+import InventoryIcon from '@mui/icons-material/Inventory';
+import PeopleIcon from '@mui/icons-material/People';
 
-/**
- * Admin Dashboard Page Component.
- * Displays summary statistics and placeholders for admin overview.
- * Styled using Material UI to match a dark, modern aesthetic.
- */
 const AdminDashboardPage = () => {
   const [summaryData, setSummaryData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -74,26 +73,16 @@ const AdminDashboardPage = () => {
     .reduce((sum, order) => sum + (parseFloat(order.total_amount) || 0), 0)
     .toFixed(2);
 
-  const paperStyles = {
-    p: 3,
-    backgroundColor: (theme) => theme.palette.background.paper,
-    boxShadow: 3,
+  const cardStyles = (backgroundColor) => ({
+    backgroundColor,
+    color: '#ffffff',
+    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
     borderRadius: 2,
     height: '100%',
-  };
-
-  const cardStyles = {
-    backgroundColor: (theme) => theme.palette.background.paper,
-    color: (theme) => theme.palette.text.primary,
-    boxShadow: 3,
-    borderRadius: 2,
-    height: '100%',
-    transition: 'transform 0.2s',
-    '&:hover': {
-      transform: 'scale(1.02)',
-      boxShadow: 6,
-    },
-  };
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'center',
+  });
 
   const handleRevenueClick = () => {
     navigate('/admin/orders?filter=revenue');
@@ -112,78 +101,124 @@ const AdminDashboardPage = () => {
   };
 
   return (
-    <Box sx={{ mt: 4, mb: 4 }}>
-      <Typography variant="h4" gutterBottom>
-        Admin Dashboard
-      </Typography>
-
+    <Box sx={{ 
+      padding: 0, 
+      width: '100%', 
+      height: 'calc(100vh - 100px)',
+      display: 'flex',
+      flexDirection: 'column',
+    }}>
       {loading ? (
-        <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
-          <CircularProgress color="primary" />
+        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', flex: 1 }}>
+          <CircularProgress sx={{ color: '#7e57c2' }} />
         </Box>
       ) : error ? (
-        <Alert severity="error" sx={{ mt: 4 }}>
+        <Alert severity="error" sx={{ mt: 4, backgroundColor: '#f44336', color: '#ffffff' }}>
           {error}
         </Alert>
       ) : (
-        <Grid container spacing={4}>
-          <Grid item xs={12} sm={6} md={3}>
-            <Card sx={cardStyles}>
-              <CardActionArea onClick={handleRevenueClick}>
-                <CardContent>
-                  <Typography variant="h6" color="text.secondary" gutterBottom>
-                    Total Revenue
-                  </Typography>
-                  <Typography variant="h3">
-                    ${totalRevenue || '0.00'}
-                  </Typography>
-                </CardContent>
-              </CardActionArea>
-            </Card>
-          </Grid>
-          <Grid item xs={12} sm={6} md={3}>
-            <Card sx={cardStyles}>
-              <CardActionArea onClick={handleOrdersClick}>
-                <CardContent>
-                  <Typography variant="h6" color="text.secondary" gutterBottom>
-                    Total Orders
-                  </Typography>
-                  <Typography variant="h3">
-                    {summaryData?.totalOrders || '0'}
-                  </Typography>
-                </CardContent>
-              </CardActionArea>
-            </Card>
-          </Grid>
-          <Grid item xs={12} sm={6} md={3}>
-            <Card sx={cardStyles}>
-              <CardActionArea onClick={handleProductsClick}>
-                <CardContent>
-                  <Typography variant="h6" color="text.secondary" gutterBottom>
-                    Total Products
-                  </Typography>
-                  <Typography variant="h3">
-                    {summaryData?.totalProducts || '0'}
-                  </Typography>
-                </CardContent>
-              </CardActionArea>
-            </Card>
-          </Grid>
-          <Grid item xs={12} sm={6} md={3}>
-            <Card sx={cardStyles}>
-              <CardActionArea onClick={handleUsersClick}>
-                <CardContent>
-                  <Typography variant="h6" color="text.secondary" gutterBottom>
-                    Active Users
-                  </Typography>
-                  <Typography variant="h3">
-                    {summaryData?.activeUsers || '0'}
-                  </Typography>
-                </CardContent>
-              </CardActionArea>
-            </Card>
-          </Grid>
-        </Grid>
+        <Box sx={{ 
+          display: 'flex', 
+          flexDirection: 'column', 
+          gap: 3, 
+          width: '100%', 
+          height: '100%', 
+          padding: 2
+        }}>
+          {}
+          <Box sx={{ 
+            display: 'flex', 
+            width: '100%', 
+            gap: 3, 
+            flexDirection: { xs: 'column', sm: 'row' },
+            height: '50%', 
+          }}>
+            <Box sx={{ flex: 1, height: '100%' }}>
+              <Card sx={{ ...cardStyles('#28a745'), height: '100%' }}> {}
+                <CardActionArea 
+                  onClick={handleRevenueClick} 
+                  sx={{ height: '100%', width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center' }}
+                >
+                  <CardContent sx={{ textAlign: 'center', py: 4 }}>
+                    <AttachMoneyIcon sx={{ fontSize: 56, mb: 2 }} />
+                    <Typography variant="body1" sx={{ fontWeight: 'medium', mb: 2, fontSize: '1.2rem' }}>
+                      Total Revenue
+                    </Typography>
+                    <Typography variant="h3" sx={{ fontWeight: 'bold' }}>
+                      ${totalRevenue || '0.00'}
+                    </Typography>
+                  </CardContent>
+                </CardActionArea>
+              </Card>
+            </Box>
+            
+            <Box sx={{ flex: 1, height: '100%' }}>
+              <Card sx={{ ...cardStyles('#ffc107'), height: '100%' }}> {}
+                <CardActionArea 
+                  onClick={handleOrdersClick} 
+                  sx={{ height: '100%', width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center' }}
+                >
+                  <CardContent sx={{ textAlign: 'center', py: 4 }}>
+                    <ShoppingCartIcon sx={{ fontSize: 56, mb: 2 }} />
+                    <Typography variant="body1" sx={{ fontWeight: 'medium', mb: 2, fontSize: '1.2rem' }}>
+                      Total Orders
+                    </Typography>
+                    <Typography variant="h3" sx={{ fontWeight: 'bold' }}>
+                      {summaryData?.totalOrders || '0'}
+                    </Typography>
+                  </CardContent>
+                </CardActionArea>
+              </Card>
+            </Box>
+          </Box>
+          
+          {}
+          <Box sx={{ 
+            display: 'flex', 
+            width: '100%', 
+            gap: 3, 
+            flexDirection: { xs: 'column', sm: 'row' },
+            height: '50%',
+          }}>
+            <Box sx={{ flex: 1, height: '100%' }}>
+              <Card sx={{ ...cardStyles('#007bff'), height: '100%' }}> {}
+                <CardActionArea 
+                  onClick={handleUsersClick} 
+                  sx={{ height: '100%', width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center' }}
+                >
+                  <CardContent sx={{ textAlign: 'center', py: 4 }}>
+                    <PeopleIcon sx={{ fontSize: 56, mb: 2 }} />
+                    <Typography variant="body1" sx={{ fontWeight: 'medium', mb: 2, fontSize: '1.2rem' }}>
+                      Active Users
+                    </Typography>
+                    <Typography variant="h3" sx={{ fontWeight: 'bold' }}>
+                      {summaryData?.activeUsers || '0'}
+                    </Typography>
+                  </CardContent>
+                </CardActionArea>
+              </Card>
+            </Box>
+            
+            <Box sx={{ flex: 1, height: '100%' }}>
+              <Card sx={{ ...cardStyles('#dc3545'), height: '100%' }}> {}
+                <CardActionArea 
+                  onClick={handleProductsClick} 
+                  sx={{ height: '100%', width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center' }}
+                >
+                  <CardContent sx={{ textAlign: 'center', py: 4 }}>
+                    <InventoryIcon sx={{ fontSize: 56, mb: 2 }} />
+                    <Typography variant="body1" sx={{ fontWeight: 'medium', mb: 2, fontSize: '1.2rem' }}>
+                      Total Products
+                    </Typography>
+                    <Typography variant="h3" sx={{ fontWeight: 'bold' }}>
+                      {summaryData?.totalProducts || '0'}
+                    </Typography>
+                  </CardContent>
+                </CardActionArea>
+              </Card>
+            </Box>
+          </Box>
+        </Box>
       )}
     </Box>
   );

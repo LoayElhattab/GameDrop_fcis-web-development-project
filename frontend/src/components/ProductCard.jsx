@@ -4,20 +4,7 @@ import AddShoppingCartIcon from '@mui/icons-material/AddShoppingCart';
 import { Link } from 'react-router-dom';
 import { useCart } from '../contexts/CartContext';
 
-/**
- * Reusable component to display a single product card.
- * Styled to match the v0.dev prototype's product card appearance.
- *
- * @param {object} product - The product object to display.
- * @param {string} product.id - The unique ID of the product.
- * @param {string} product.title - The title of the product.
- * @param {string} product.platform - The platform the game is on.
- * @param {string} product.genre - The genre of the game.
- * @param {number} product.price - The price of the product.
- * @param {string} product.cover_image_url - The URL of the product's cover image.
- * @param {number} product.stock_quantity - The number of items in stock.
- * @param {boolean} isAdmin - Indicates if the current user is an admin.
- */
+
 function ProductCard({ product, isAdmin }) {
     const { addItem } = useCart();
 
@@ -51,6 +38,7 @@ function ProductCard({ product, isAdmin }) {
                 component="img"
                 sx={{
                     height: 200,
+                    width: '100%',
                     objectFit: 'cover',
                     borderTopLeftRadius: 8,
                     borderTopRightRadius: 8,

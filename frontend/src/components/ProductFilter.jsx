@@ -1,23 +1,15 @@
-// gamedrop-frontend/src/components/ProductFilter.jsx
 import React from 'react';
 import { FormControl, InputLabel, Select, MenuItem, Box, Typography } from '@mui/material';
 
-/**
- * A filter component for products by platform and genre.
- * Styled to match the prototype's dark theme.
- *
- * @param {object} filterCriteria - An object containing current filter values (e.g., { platform: '', genre: '' }).
- * @param {function} onFilterChange - Function to call when a filter value changes. Receives { type: 'platform' | 'genre', value: string }.
- */
+
 function ProductFilter({ filterCriteria, onFilterChange }) {
 
-    // Placeholder data for platforms and genres - replace with actual data fetched from backend
     const platforms = ['All Platforms', 'PlayStation', 'Xbox', 'Nintendo', 'PC'];
     const genres = ['All Genres', 'Action', 'RPG', 'Strategy', 'Sports', 'Adventure', 'Simulation'];
 
 
     return (
-        <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+        <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' , marginLeft: 2 }}>
             {/* Platform Filter */}
             <FormControl sx={{ minWidth: 150 }} size="small">
                 <InputLabel

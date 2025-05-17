@@ -1,62 +1,54 @@
-// gamedrop-frontend/src/pages/FilteredProductsSearch.jsx
 import React, { useEffect, useState, useCallback } from 'react';
 import { Box, Typography, Container, Grid, Pagination } from '@mui/material';
-import apiClient from '../api/apiClient'; // Assuming apiClient is configured here
-import ProductCard from '../components/ProductCard'; // ProductCard component
-import ProductSearch from '../components/ProductSearch'; // ProductSearch component
-import ProductFilter from '../components/ProductFilter'; // ProductFilter component
-import { useSearchParams, useNavigate } from 'react-router-dom'; // Hook for URL parameters
+import apiClient from '../api/apiClient';
+import ProductCard from '../components/ProductCard';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 
 function FilteredProductsSearch() {
     const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [totalProducts, setTotalProducts] = useState(0); // State to hold total number of products
+    const [totalProducts, setTotalProducts] = useState(0);
 
-    // Use useSearchParams to read and update URL query parameters
     const [searchParams, setSearchParams] = useSearchParams();
-
-    // Get current search, filter, and pagination values from URL params
     const searchTerm = searchParams.get('search') || '';
     const platformFilter = searchParams.get('platform') || '';
     const genreFilter = searchParams.get('genre') || '';
-    const currentPage = parseInt(searchParams.get('page') || '1', 10); // Default to page 1
-    const limit = parseInt(searchParams.get('limit') || '12', 10); // Default limit to 12, can be changed
+    const fromPlatform = searchParams.get('fromPlatform') === 'true'; 
+    const allGames = searchParams.get('allGames') === 'true';
+    const currentPage = parseInt(searchParams.get('page') || '1', 10);
+    const limit = parseInt(searchParams.get('limit') || '12', 10);
 
-    // Calculate total pages
     const totalPages = Math.ceil(totalProducts / limit);
     const navigate = useNavigate();
-    // Memoize the fetch function to avoid unnecessary re-creations
+
     const fetchProducts = useCallback(async () => {
         setLoading(true);
         setError(null);
         try {
-            // Fetch products from the backend API using current search, filter, and pagination params
-            const response = await apiClient.get('/products/getProducts', { // Ensure this endpoint is correct
+            const response = await apiClient.get('/products/getProducts', {
                 params: {
-                    search: searchTerm || undefined, // Only include if not empty
-                    platform: platformFilter || undefined, // Only include if not empty
-                    genre: genreFilter || undefined, // Only include if not empty
+                    search: searchTerm || undefined,
+                    platform: platformFilter || undefined,
+                    genre: genreFilter || undefined,
                     page: currentPage,
                     limit: limit,
                 }
             });
-            setProducts(response.data.products || []); // Assuming API returns { products: [...], total: N }
-            setTotalProducts(response.data.total || 0); // Set the total number of products
+            setProducts(response.data.products || []);
+            setTotalProducts(response.data.total || 0);
             setLoading(false);
         } catch (err) {
-            console.error("Error fetching filtered products:", err); // Log the error for debugging
+            console.error("Error fetching filtered products:", err);
             setError(err);
             setLoading(false);
         }
-    }, [searchTerm, platformFilter, genreFilter, currentPage, limit]); // Dependencies for useCallback
+    }, [searchTerm, platformFilter, genreFilter, currentPage, limit]);
 
-    // Effect to fetch products whenever search params change
     useEffect(() => {
         fetchProducts();
-    }, [fetchProducts]); // Dependency is the memoized fetchProducts function
+    }, [fetchProducts]);
 
-    // Handler for search submission (updates URL param)
     const handleSearchSubmit = (value) => {
         setSearchParams(prevParams => {
             const newParams = new URLSearchParams(prevParams);
@@ -65,32 +57,25 @@ function FilteredProductsSearch() {
             } else {
                 newParams.delete('search');
             }
-            // Reset page to 1 on new search
             newParams.set('page', '1');
             return newParams;
         });
     };
 
-
-    // Handler for filter change (updates URL params)
     const handleFilterChange = ({ type, value }) => {
-        // Update the relevant filter query parameter in the URL
         setSearchParams(prevParams => {
             const newParams = new URLSearchParams(prevParams);
             if (value) {
                 newParams.set(type, value);
             } else {
-                newParams.delete(type); // Remove param if value is empty (e.g., "All Platforms")
+                newParams.delete(type);
             }
-            // Reset page to 1 on filter change
             newParams.set('page', '1');
             return newParams;
         });
     };
 
-    // Handler for pagination change (updates URL param)
     const handlePageChange = (event, value) => {
-        // Update the 'page' query parameter in the URL
         setSearchParams(prevParams => {
             const newParams = new URLSearchParams(prevParams);
             newParams.set('page', value.toString());
@@ -98,19 +83,13 @@ function FilteredProductsSearch() {
         });
     };
 
-    // Function to handle search input change (optional, can be used for live search or suggestions)
-    // For now, we'll just pass it to the ProductSearch component, but the actual filtering
-    // happens on submit via handleSearchSubmit.
     const handleSearchInputChange = (value) => {
-        if (searchTerm.trim()) { // Only navigate if the search term is not empty
-            // Navigate to the /products page with the search term as a query parameter
+        if (searchTerm.trim()) {
             navigate(`/search-results?search=${encodeURIComponent(searchTerm.trim())}`);
         } else {
-            // Optional: Show a message or just navigate to products page without search
             navigate('/products/getProducts');
         }
     };
-
 
     if (loading) {
         return (
@@ -128,22 +107,26 @@ function FilteredProductsSearch() {
         );
     }
 
+    // Determine the title based on navigation source
+    const pageTitle = allGames 
+        ? 'All Games'
+        : fromPlatform && platformFilter 
+        ? `${platformFilter} Games`
+        : 'Search Results';
+
     return (
         <Box
             sx={{
-                backgroundColor: '#121212', // Dark background color
-                color: '#ffffff', // White text color
+                backgroundColor: '#121212',
+                color: '#ffffff',
                 minHeight: '100vh',
                 paddingY: 4,
             }}
         >
             <Container maxWidth="lg">
                 <Typography variant="h3" component="h1" gutterBottom sx={{ color: '#ffffff', fontWeight: 'bold', mb: 4 }}>
-                    Search Results
+                    {pageTitle}
                 </Typography>
-
-
-
 
                 {/* Product Grid */}
                 <Grid container spacing={3}>
@@ -161,7 +144,7 @@ function FilteredProductsSearch() {
                 </Grid>
 
                 {/* Pagination */}
-                {totalPages > 1 && ( // Only show pagination if there's more than one page
+                {totalPages > 1 && (
                     <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
                         <Pagination
                             count={totalPages}
@@ -170,17 +153,17 @@ function FilteredProductsSearch() {
                             color="primary"
                             sx={{
                                 '.MuiPaginationItem-root': {
-                                    color: '#ffffff', // White text for page numbers
+                                    color: '#ffffff',
                                     '&.Mui-selected': {
-                                        backgroundColor: '#7e57c2', // Purple background for selected page
+                                        backgroundColor: '#7e57c2',
                                         color: '#ffffff',
                                     },
                                     '&:hover': {
-                                        backgroundColor: '#673ab7', // Darker purple on hover
+                                        backgroundColor: '#673ab7',
                                     },
                                 },
                                 '.MuiPaginationItem-icon': {
-                                    color: '#ffffff', // White color for navigation icons
+                                    color: '#ffffff',
                                 }
                             }}
                         />
