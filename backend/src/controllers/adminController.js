@@ -75,66 +75,6 @@ const getUserById = async (req, res, next) => {
     }
 };
 
-const updateUserRole = async (req, res, next) => {
-    const { userId } = req.params;
-    try {
-        const { role } = req.body; // 
-
-         if (!userId) {
-             const error = new Error('User ID is required in parameters.');
-             error.statusCode = 400;
-             return next(error);
-         }
-         if (!role) {
-             const error = new Error('New role is required in body.');
-             error.statusCode = 400;
-             return next(error);
-         }
-
-
-        const validRoles = ['CUSTOMER', 'ADMIN']; 
-
-        if (!validRoles.includes(role.toUpperCase())) {
-            const error = new Error(`Invalid role "${role}". Allowed roles are: ${validRoles.join(', ')}`);
-            error.statusCode = 400;
-            return next(error);
-        }
-
-         if (req.user.id === userId) {
-             const error = new Error('Cannot change your own role via this endpoint.');
-             error.statusCode = 403; 
-             return next(error);
-         }
-
-
-        const updatedUser = await prisma.user.update({
-            where: {
-                id: userId,
-            },
-            data: {
-                role: role.toUpperCase(), 
-            },
-            select: { 
-                 id: true,
-                 username: true,
-                 email: true,
-                 role: true,
-                 created_at: true,
-                 updated_at: true,
-             }
-        });
-
-        res.status(200).json(updatedUser);
-
-    } catch (error) {
-        if (error.code === 'P2025') { 
-             const notFoundError = new Error(`User with ID ${userId} not found.`);
-             notFoundError.statusCode = 404;
-             return next(notFoundError);
-         }
-        next(error); 
-    }
-};
 const deleteUser = async (req, res, next) => {
     const { userId } = req.params;
     try {
@@ -228,7 +168,6 @@ const getDashboardMetrics = async (req, res, next) => {
 module.exports = {
     getAllUsers,
     getUserById,
-    updateUserRole,
     deleteUser,
     getDashboardMetrics,
 

@@ -43,27 +43,30 @@ describe("Product Controller", () => {
   // === getAllProducts ===
   describe("getAllProducts", () => {
     it("should return a list of products with pagination and filters", async () => {
-      const mockProducts = [
-        { id: "1", title: "Game 1", price: 59.99 },
-        { id: "2", title: "Game 2", price: 49.99 },
-      ];
-      const mockCount = 2;
-
-      prisma.product.findMany.mockResolvedValue(mockProducts);
-      prisma.product.count.mockResolvedValue(mockCount);
-
-      req.query = {
-        page: "1",
-        limit: "10",
-        platform: "PS5",
-        search: "Game",
-      };
-
+  const req = {
+    query: {
+      platform: "PS5",
+      genre: "Action",
+      search: "Game",
+      page: "1",
+      limit: "10",
+    },
+  };
+  const res = {
+    status: jest.fn().mockReturnThis(),
+    json: jest.fn(),
+  };
+    const next = jest.fn();
+const mockProducts = [{ id: "1", title: "Game 1" }];
+  prisma.product.findMany = jest.fn().mockResolvedValue(mockProducts);
+  prisma.product.count = jest.fn().mockResolvedValue(1);
       await getAllProducts(req, res, next);
 
       expect(prisma.product.findMany).toHaveBeenCalledWith({
         where: {
+          is_deleted: false,
           platform: "PS5",
+          genre: "Action",
           OR: [
             { title: { contains: "Game", mode: "insensitive" } },
             { description: { contains: "Game", mode: "insensitive" } },
@@ -74,7 +77,9 @@ describe("Product Controller", () => {
       });
       expect(prisma.product.count).toHaveBeenCalledWith({
         where: {
+          is_deleted: false,
           platform: "PS5",
+          genre: "Action",
           OR: [
             { title: { contains: "Game", mode: "insensitive" } },
             { description: { contains: "Game", mode: "insensitive" } },
@@ -85,7 +90,7 @@ describe("Product Controller", () => {
       expect(res.json).toHaveBeenCalledWith(
         expect.objectContaining({
           products: mockProducts,
-          total: mockCount,
+          total: 1,
           currentPage: 1,
           totalPages: 1,
         }),
@@ -341,46 +346,42 @@ describe("Product Controller", () => {
   });
 
   // === deleteProduct ===
-  describe("deleteProduct", () => {
-    it("should delete a product and return it", async () => {
-      const mockProduct = { id: "1", title: "Game 1", price: 59.99 };
-      prisma.product.delete.mockResolvedValue(mockProduct);
+describe("deleteProduct", () => {
+  it("should delete a product and return it", async () => {
+    req.params = { id: "1" };
+    const mockProduct = { id: "1", stock_quantity: 10 };
+    
+    prisma.product.findUnique.mockResolvedValue(mockProduct);
+    prisma.product.update.mockResolvedValue({ ...mockProduct, is_deleted: true });
 
-      req.params = { id: "1" };
+    await deleteProduct(req, res, next);
 
-      await deleteProduct(req, res, next);
-
-      expect(prisma.product.delete).toHaveBeenCalledWith({
-        where: { id: "1" },
-      });
-      expect(res.status).toHaveBeenCalledWith(200);
-      expect(res.json).toHaveBeenCalledWith(
-        expect.objectContaining({
-          message: "Product deleted successfully",
-          product: mockProduct,
-        }),
-      );
+    expect(prisma.product.update).toHaveBeenCalledWith({
+      where: { id: "1" },
+      data: { is_deleted: true },
     });
-
-    it("should return 404 if product not found", async () => {
-      prisma.product.delete.mockRejectedValue({ code: "P2025" });
-
-      req.params = { id: "1" };
-
-      await deleteProduct(req, res, next);
-
-      expect(res.status).toHaveBeenCalledWith(404);
-      expect(res.json).toHaveBeenCalledWith({ error: "Product not found" });
-    });
-
-    it("should handle database errors", async () => {
-      prisma.product.delete.mockRejectedValue(new Error("Database error"));
-
-      req.params = { id: "1" };
-
-      await deleteProduct(req, res, next);
-
-      expect(next).toHaveBeenCalledWith(expect.any(Error));
-    });
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.json).toHaveBeenCalledWith({ message: "Product deactivated successfully" });
   });
+
+  it("should return 404 if product not found", async () => {
+    req.params = { id: "1" };
+    prisma.product.findUnique.mockResolvedValue(null);
+
+    await deleteProduct(req, res, next);
+
+    expect(res.status).toHaveBeenCalledWith(404);
+    expect(res.json).toHaveBeenCalledWith({ error: "Product not found" });
+  });
+
+  it("should handle database errors", async () => {
+    req.params = { id: "1" };
+    prisma.product.findUnique.mockResolvedValue({ id: "1" }); // Return a dummy product so it proceeds to update
+    prisma.product.update.mockRejectedValue(new Error("Database error"));
+
+    await deleteProduct(req, res, next);
+
+    expect(next).toHaveBeenCalledWith(expect.any(Error));
+  });
+});
 });

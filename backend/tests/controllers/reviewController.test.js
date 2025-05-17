@@ -224,6 +224,6 @@ describe("Review Controller", () => {
       await getReviewsForProduct(req, res, next);
 
       expect(next).toHaveBeenCalledWith(expect.any(Error));
-    });
-  });
+    });
+  });
 });
