@@ -42,6 +42,11 @@ describe("Review Controller", () => {
         rating: 4,
         comment: "Great game, highly recommended!",
         created_at: new Date(),
+         user: {
+    id: "user123",
+    username: "testuser",
+    email: "test@example.com",
+  },
       };
       prisma.review.findFirst.mockResolvedValue(null); // No existing review
       prisma.review.create.mockResolvedValue(mockReview);
@@ -64,6 +69,15 @@ describe("Review Controller", () => {
           rating: 4,
           comment: "Great game, highly recommended!",
         },
+         include: {
+    user: {
+      select: {
+        id: true,
+        username: true,
+        email: true,
+      },
+    },
+  },
       });
       expect(res.status).toHaveBeenCalledWith(201);
       expect(res.json).toHaveBeenCalledWith(
@@ -146,6 +160,11 @@ describe("Review Controller", () => {
           rating: 4,
           comment: "Great game!",
           created_at: new Date(),
+           user: {
+      id: "user123",
+      username: "testuser",
+      email: "test@example.com",
+    },
         },
       ];
       prisma.review.findMany.mockResolvedValue(mockReviews);
@@ -156,6 +175,15 @@ describe("Review Controller", () => {
 
       expect(prisma.review.findMany).toHaveBeenCalledWith({
         where: { product_id: "1" },
+        include: {
+    user: {
+      select: {
+        id: true,
+        username: true,
+        email: true,
+      },
+    },
+  },
       });
       expect(res.status).toHaveBeenCalledWith(200);
       expect(res.json).toHaveBeenCalledWith(
@@ -172,6 +200,15 @@ describe("Review Controller", () => {
 
       expect(prisma.review.findMany).toHaveBeenCalledWith({
         where: { product_id: "1" },
+         include: {
+      user: {
+        select: {
+          id: true,
+          username: true,
+          email: true,
+        },
+      },
+    },
       });
       expect(res.status).toHaveBeenCalledWith(200);
       expect(res.json).toHaveBeenCalledWith({
@@ -187,6 +224,6 @@ describe("Review Controller", () => {
       await getReviewsForProduct(req, res, next);
 
       expect(next).toHaveBeenCalledWith(expect.any(Error));
-    });
-  });
+    });
+  });
 });

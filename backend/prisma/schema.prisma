@@ -42,7 +42,7 @@ model Product {
   updated_at     DateTime    @updatedAt @db.Timestamptz(6)
   is_deleted    Boolean  @default(false)
   cartItems      CartItem[]
-  orderItems     OrderItem[]  
+  orderItems     OrderItem[]
   reviews        Review[]
 }
 
