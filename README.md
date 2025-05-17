@@ -170,10 +170,6 @@ GameDrop utilizes a PostgreSQL database with the following core tables:
   ```
 
 ## Development
-- Run linting:
-  ```
-  npm run lint
-  ```
 - Run formatting:
   ```
   npm run format
