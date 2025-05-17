@@ -73,8 +73,8 @@ const AdminDashboardPage = () => {
     .reduce((sum, order) => sum + (parseFloat(order.total_amount) || 0), 0)
     .toFixed(2);
 
-  const cardStyles = (backgroundColor) => ({
-    backgroundColor,
+  const cardStyles = (background) => ({
+    background,
     color: '#ffffff',
     boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
     borderRadius: 2,
@@ -134,7 +134,7 @@ const AdminDashboardPage = () => {
             height: '50%', 
           }}>
             <Box sx={{ flex: 1, height: '100%' }}>
-              <Card sx={{ ...cardStyles('#28a745'), height: '100%' }}> {}
+              <Card sx={{ ...cardStyles('linear-gradient(to right, #5e35b1, #d81b60)'), height: '100%' }}> {}
                 <CardActionArea 
                   onClick={handleRevenueClick} 
                   sx={{ height: '100%', width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center' }}
@@ -153,7 +153,7 @@ const AdminDashboardPage = () => {
             </Box>
             
             <Box sx={{ flex: 1, height: '100%' }}>
-              <Card sx={{ ...cardStyles('#ffc107'), height: '100%' }}> {}
+              <Card sx={{ ...cardStyles('linear-gradient(to right, #5e35b1, #d81b60)'), height: '100%' }}> {}
                 <CardActionArea 
                   onClick={handleOrdersClick} 
                   sx={{ height: '100%', width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center' }}
@@ -181,7 +181,7 @@ const AdminDashboardPage = () => {
             height: '50%',
           }}>
             <Box sx={{ flex: 1, height: '100%' }}>
-              <Card sx={{ ...cardStyles('#007bff'), height: '100%' }}> {}
+              <Card sx={{ ...cardStyles('linear-gradient(to right, #5e35b1, #d81b60)'), height: '100%' }}> {}
                 <CardActionArea 
                   onClick={handleUsersClick} 
                   sx={{ height: '100%', width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center' }}
@@ -200,7 +200,7 @@ const AdminDashboardPage = () => {
             </Box>
             
             <Box sx={{ flex: 1, height: '100%' }}>
-              <Card sx={{ ...cardStyles('#dc3545'), height: '100%' }}> {}
+              <Card sx={{ ...cardStyles('linear-gradient(to right, #5e35b1, #d81b60)'), height: '100%' }}> {}
                 <CardActionArea 
                   onClick={handleProductsClick} 
                   sx={{ height: '100%', width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center' }}
